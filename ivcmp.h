@@ -11,11 +11,12 @@ extern "C"
 #endif
 
 #include <stdint.h>
-
-#if defined(_WIN32)
-    #define CCONV __cdecl
+#if defined(_WIN32) || defined (_WIN64)
+#define EXPORT __declspec(dllexport)
+#define CCONV __cdecl
 #else
-    #define CCONV
+#define EXPORT
+#define CCONV
 #endif
 
 /** 
@@ -25,7 +26,7 @@ extern "C"
  * @param[in] NewMinV Характерный уровень шума по напряжению. Единицы измерения: Вольты.
  * @param[in] NewMinC Характерный уровень шума по току. Единицы измерения: мА.
  */
-void CCONV SetMinVC(double NewMinV, double NewMinC);
+EXPORT void CCONV SetMinVC(double NewMinV, double NewMinC);
 
 /**
  * Функция для сравнения двух кривых (ВАХ). 
@@ -41,9 +42,9 @@ void CCONV SetMinVC(double NewMinV, double NewMinC);
  * @param[in] CurveLength Kоличество точек кривой
  * @param[out] Score Степень различия
  */
-double CCONV CompareIVC(double *VoltagesA, double *CurrentsA,
-                        double *VoltagesB, double *CurrentsB,
-                        uint32_t CurveLength);
+EXPORT double CCONV CompareIVC(double *VoltagesA, double *CurrentsA,
+                               double *VoltagesB, double *CurrentsB,
+                               uint32_t CurveLength);
 #ifdef __cplusplus
 }
 #endif

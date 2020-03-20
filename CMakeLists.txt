@@ -6,10 +6,9 @@ project(ivcmp)
 set(PROJECT_EXAMPLE_NAME ${PROJECT_NAME}example)
 set(PROJECT_LIB_NAME ${PROJECT_NAME})
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
 # Project, library
 add_library(${PROJECT_LIB_NAME} SHARED ivcmp.c)
+add_library(${PROJECT_LIB_NAME}_static OBJECT ivcmp.c)  # and static library
 include(GNUInstallDirs)
 set_target_properties(${PROJECT_LIB_NAME} PROPERTIES
     PUBLIC_HEADER ivcmp.h)
