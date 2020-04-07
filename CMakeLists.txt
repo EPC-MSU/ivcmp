@@ -24,6 +24,15 @@ target_link_libraries(${PROJECT_EXAMPLE_NAME} ${PROJECT_LIB_NAME})
 add_dependencies(${PROJECT_EXAMPLE_NAME} ${PROJECT_LIB_NAME})
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_EXAMPLE_NAME})
 
+# Threat all warnings as errors
+if(MSVC)
+    target_compile_options(${PROJECT_LIB_NAME} PRIVATE /W4 /WX)
+    target_compile_options(${PROJECT_EXAMPLE_NAME} PRIVATE /W4 /WX)
+else()
+    target_compile_options(${PROJECT_LIB_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+    target_compile_options(${PROJECT_EXAMPLE_NAME} PRIVATE -Wall -Wextra -pedantic -Werror)
+endif()
+
 # Link Math
 if(NOT WIN32)
     target_link_libraries(${PROJECT_LIB_NAME} m)
