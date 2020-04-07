@@ -66,7 +66,7 @@ int main(void)
   printf("Got Score = %.2lf, should be 0.\n", ResultScore);
   if (fabs(ResultScore) > 0.001)
   {
-    printf("Test failed!!!\n", ResultScore);
+    printf("Test failed!!!\n");
     return -1;
   }
 
@@ -77,7 +77,7 @@ int main(void)
   printf("Got Score = %.2lf, should be 1.\n", ResultScore);
   if (fabs(ResultScore - 1) > 0.01)
   {
-    printf("Test failed!!!\n", ResultScore);
+    printf("Test failed!!!\n");
     return -1;
   }
 
@@ -88,7 +88,7 @@ int main(void)
   printf("Got Score = %.2lf, should be 0.18.\n", ResultScore);
   if (fabs(ResultScore - 0.17) > 0.01)
   {
-    printf("Test failed!!!\n", ResultScore);
+    printf("Test failed!!!\n");
     return -1;
   }
 
@@ -99,7 +99,7 @@ int main(void)
   printf("Got Score = %.2lf, should be 1.\n", ResultScore);
   if (fabs(ResultScore - 1) > 0.01)
   {
-    printf("Test failed!!!\n", ResultScore);
+    printf("Test failed!!!\n");
     return -1;
   }
 
