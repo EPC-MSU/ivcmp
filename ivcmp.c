@@ -10,8 +10,8 @@
 /*********************************/
 /*    Definitions      */
 /*********************************/
-#define min(a, b) (((a < b)) ? (a) : (b))
-#define max(a, b) (((a > b)) ? (a) : (b))
+#define min(a, b) (((a<b))?(a):(b))
+#define max(a, b) (((a>b))?(a):(b))
 #define IV_CURVE_NUM_COMPONENTS 2
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
@@ -181,6 +181,7 @@ static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
   }
 
   Transpose(pts, PtsT, IV_CURVE_NUM_COMPONENTS, SizeJ);
+
   for (j = 0; j < SizeJ; j++)
   {
     LocMin = 100000;
@@ -195,21 +196,21 @@ static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
       }
     }
     Transpose(Curve, CurveT, IV_CURVE_NUM_COMPONENTS, SizeJ);
-    PrevNode = CurveT[LocMinItem - 1];
     CurNode = CurveT[LocMinItem];
-    NextNode = CurveT[LocMinItem + 1];
     
     if (LocMinItem > 0)
     {
+      PrevNode = CurveT[LocMinItem - 1];
       Dist1 = Dist2PtSeg(pt, PrevNode, CurNode, IV_CURVE_NUM_COMPONENTS);
     }
     else
     {
       Dist1 = INFINITY;
     }
-
+   
     if (LocMinItem < SizeJ - 1)
     {
+      NextNode = CurveT[LocMinItem + 1];
       Dist2 = Dist2PtSeg(pt, CurNode, NextNode, IV_CURVE_NUM_COMPONENTS);
     }
     else
@@ -483,11 +484,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
     a_[1][i] = a_[1][i] / VarC;
 
   }
-
   uint32_t SizeA = RemoveRepeatsIvc(a_, 0.002, CurveLength);
-  for (i = 0; i < SizeA; i++)
-  {
-  }
 
   double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
@@ -542,13 +539,14 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
       b_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
     }
+    DistCurvePts(a_, b_, SizeB);
     Score = RescaleScore((DistCurvePts(a_, b_, SizeB) + DistCurvePts(b_, a_, SizeB)) / 2.);
   }
   free(InCurve);
   free(OutCurve);
   free(*b_);
   free(*a_);
-
+  
   return Score;
 }
 
