@@ -10,8 +10,8 @@
 /*********************************/
 /*    Definitions      */
 /*********************************/
-#define min(a, b) (((a<b))?(a):(b))
-#define max(a, b) (((a>b))?(a):(b))
+//#define min(a, b) (((a<b))?(a):(b))
+//#define max(a, b) (((a>b))?(a):(b))
 #define IV_CURVE_NUM_COMPONENTS 2
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
@@ -157,7 +157,7 @@ static double RescaleScore(double x)
 static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
 {
   double res = 0.0;
-  uint32_t LocMinItem; double LocMin;
+  uint32_t LocMinItem = 0; double LocMin;
   double *v = (double *)malloc(SizeJ * sizeof(double));
   double *PrevNode = NULL;
   double *CurNode = NULL;
@@ -205,7 +205,7 @@ static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
     }
     else
     {
-      Dist1 = INFINITY;
+      Dist1 = 10000;
     }
    
     if (LocMinItem < SizeJ - 1)
@@ -215,7 +215,7 @@ static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
     }
     else
     {
-      Dist2 = INFINITY;
+      Dist2 = 10000;
     }
     res += min(Dist1, Dist2);
   }
@@ -226,17 +226,22 @@ static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
   return res;
 }
 
+static double Abs(double x)
+{
+	return sqrt(x*x);
+}
+
 /*
 * Removes repeates data in curve
 */
-static int RemoveRepeatsIvc(double ** a, double eps, uint32_t SizeJ)
+static int RemoveRepeatsIvc(double ** a, uint32_t SizeJ)
 {
   uint32_t i;
   uint32_t j;
   uint32_t k;
   uint32_t p;
   uint32_t n;
-  long double Diff;
+  double Diff;
   uint32_t SizeN = SizeJ;
   for (p = 0; p < IV_CURVE_NUM_COMPONENTS; p++)
   {
@@ -245,8 +250,8 @@ static int RemoveRepeatsIvc(double ** a, double eps, uint32_t SizeJ)
     {
       for (j = i + 1; j <= n - 1; j++)
       {
-        Diff = abs(a[p][i] - a[p][j]);
-        if (Diff < 1.e-10 * min(abs(a[p][i]), abs(a[p][j])))
+        Diff = Abs(a[p][i] - a[p][j]);
+        if (Diff < 1.e-10 * min(Abs(a[p][i]), Abs(a[p][j])))
         {
           for (k = j; k <= n - 1; k++)
           {
@@ -484,7 +489,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
     a_[1][i] = a_[1][i] / VarC;
 
   }
-  uint32_t SizeA = RemoveRepeatsIvc(a_, 0.002, CurveLength);
+  uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLength);
 
   double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
@@ -519,7 +524,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       b_[0][i] = b_[0][i] / VarV;
       b_[1][i] = b_[1][i] / VarC;
     }
-    uint32_t SizeB = RemoveRepeatsIvc(b_, 0.002, CurveLength);
+    uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLength);
 
     for (i = 0; i < SizeB; i++)
     {
