@@ -16,6 +16,7 @@
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
 static double MinVarV, MinVarC;
+#define SCORE_ERROR -1    /**< Algorithm return Error */
 
 /*********************************/
 /*  Internal functions     */
@@ -242,7 +243,7 @@ static int RemoveRepeatsIvc(double ** a, uint32_t SizeJ)
   uint32_t p;
   uint32_t n;
   double Diff;
-  uint32_t SizeN = SizeJ;
+  uint32_t SizeN = 0;
   for (p = 0; p < IV_CURVE_NUM_COMPONENTS; p++)
   {
     n = SizeJ;
@@ -251,7 +252,7 @@ static int RemoveRepeatsIvc(double ** a, uint32_t SizeJ)
       for (j = i + 1; j <= n - 1; j++)
       {
         Diff = Abs(a[p][i] - a[p][j]);
-        if (Diff < 1.e-10 * min(Abs(a[p][i]), Abs(a[p][j])))
+		if (Diff < 1.e-10 * min(Abs(a[p][i]), Abs(a[p][j])) || Diff == 000000e+0000)
         {
           for (k = j; k <= n - 1; k++)
           {
@@ -259,14 +260,14 @@ static int RemoveRepeatsIvc(double ** a, uint32_t SizeJ)
             {
               a[p][k] = a[p][k + 1];
             }
-            else a[p][k] = NAN;
+            else a[p][k] =  0.0;
           }
           n = n - 1;
           j = j - 1;
         }
       }
     }
-    SizeN = min(SizeN, n);
+    SizeN = max(SizeN, n);
   }
   return SizeN;
 }
@@ -489,10 +490,15 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
     a_[1][i] = a_[1][i] / VarC;
 
   }
-  uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLength);
-
   double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
+  uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLength);
+  if (SizeA < 2)
+  {
+	  Score = SCORE_ERROR;
+	  printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
+	  goto cleanup;
+  }
   for (i = 0; i < SizeA; i++)
   {
     InCurve[i * IV_CURVE_NUM_COMPONENTS + 1] = a_[0][i];
@@ -525,7 +531,12 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       b_[1][i] = b_[1][i] / VarC;
     }
     uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLength);
-
+	if (SizeB < 2)
+	{
+		Score = SCORE_ERROR;
+		printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
+		goto cleanup;
+	}
     for (i = 0; i < SizeB; i++)
     {
       InCurve[i * IV_CURVE_NUM_COMPONENTS + 1] = b_[0][i];
@@ -547,6 +558,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
     DistCurvePts(a_, b_, SizeB);
     Score = RescaleScore((DistCurvePts(a_, b_, SizeB) + DistCurvePts(b_, a_, SizeB)) / 2.);
   }
+  cleanup:
   free(InCurve);
   free(OutCurve);
   free(*b_);
