@@ -10,8 +10,8 @@
 /*********************************/
 /*    Definitions      */
 /*********************************/
-//#define min(a, b) (((a<b))?(a):(b))
-//#define max(a, b) (((a>b))?(a):(b))
+#define min(a, b) (((a<b))?(a):(b))
+#define max(a, b) (((a>b))?(a):(b))
 #define IV_CURVE_NUM_COMPONENTS 2
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
