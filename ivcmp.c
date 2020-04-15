@@ -10,7 +10,7 @@
 /*********************************/
 /*    Definitions      */
 /*********************************/
-#if defined(_LINUX)
+#if defined(linux)
 #define min(a, b) (((a<b))?(a):(b))
 #define max(a, b) (((a>b))?(a):(b))
 #endif
