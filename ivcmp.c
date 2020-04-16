@@ -29,7 +29,7 @@ static double MinVarV, MinVarC;
 /*
 * Returns the difference vector of two vectors
 */
-static void SubtractVec(double * a, double * b, double * v, uint32_t SizeArr)
+static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
 {
   uint32_t i;
   for (i = 0; i < SizeArr; i++)
@@ -41,7 +41,7 @@ static void SubtractVec(double * a, double * b, double * v, uint32_t SizeArr)
 /*
 * Returns the difference vector of vector and variable
 */
-static void SubtractVar(double * a, double b, double* v, uint32_t SizeArr)
+static void SubtractVar(double *a, double b, double *v, uint32_t SizeArr)
 {
   uint32_t i;
   for (i = 0; i < SizeArr; i++)
@@ -53,7 +53,7 @@ static void SubtractVar(double * a, double b, double* v, uint32_t SizeArr)
 /*
 * Returns the vector mean
 */
-static double Mean(double * mas, uint32_t SizeArr)
+static double Mean(double *mas, uint32_t SizeArr)
 {
   double avg = 0;
   uint32_t i;
@@ -91,7 +91,7 @@ static double Cross(double *a, double *b)
 /*
 * Clean two double massive and one-two dinamic massive
 */
-static void CleanUp(double ** Matrix1, double ** Matrix2, double *Massive1, double *Massive2)
+static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double *Massive2)
 {
   int i;
   for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
@@ -114,7 +114,7 @@ static void CleanUp(double ** Matrix1, double ** Matrix2, double *Massive1, doub
 /*
 * Returns the dispersion of vector
 */
-static double Disp(double * mas, uint32_t SizeArr)
+static double Disp(double *mas, uint32_t SizeArr)
 {
   double avg = 0;
   uint32_t i;
@@ -132,7 +132,7 @@ static double Disp(double * mas, uint32_t SizeArr)
 /*
 * Returns the transpoted matrix
 */
-static void Transpose(double ** m, double ** m_t, uint32_t SizeI, uint32_t SizeJ)
+static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
 {
   uint32_t i;
   uint32_t j;
@@ -148,7 +148,7 @@ static void Transpose(double ** m, double ** m_t, uint32_t SizeI, uint32_t SizeJ
 /*
 * Returns the distance between 3 points
 */
-static double Dist2PtSeg(double * p, double * a, double * b, uint32_t SizeArr)
+static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
 {
   double *v1 = (double *)malloc(SizeArr * sizeof(double));
   double *v2 = (double *)malloc(SizeArr * sizeof(double));
@@ -183,7 +183,7 @@ static double RescaleScore(double x)
 /*
 * Returns all distances of two iv_curves
 */
-static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
+static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
 {
   double res = 0.0;
   uint32_t LocMinItem = 0; double LocMin;
@@ -255,7 +255,7 @@ static double Abs(double x)
 /*
 * Removes repeates data in curve
 */
-static int RemoveRepeatsIvc(double ** a, uint32_t SizeJ)
+static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 {
   uint32_t i;
   uint32_t j;
