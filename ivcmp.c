@@ -89,6 +89,29 @@ static double Cross(double *a, double *b)
 }
 
 /*
+* Clean two double massive and one-two dinamic massive
+*/
+static void CleanUp(double ** Matrix1, double ** Matrix2, double *Massive1, double *Massive2)
+{
+  int i;
+  for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
+  {
+    free(Matrix1[i]);
+    free(Matrix2[i]);
+  }
+  free(Matrix1);
+  free(Matrix2);
+  if (Massive1 != NULL)
+  {
+    free(Massive1);
+  }
+  if (Massive2 != NULL)
+  {
+    free(Massive2);
+  }
+}
+
+/*
 * Returns the dispersion of vector
 */
 static double Disp(double * mas, uint32_t SizeArr)
@@ -144,7 +167,8 @@ static double Dist2PtSeg(double * p, double * a, double * b, uint32_t SizeArr)
     Result = Dot(v2, v2, SizeArr);
   }
   else Result = pow(Cross(v1, v2), 2) / SegLen2;
-  free(v1); free(v2);
+  free(v1); 
+  free(v2);
   return Result;
 }
 
@@ -172,19 +196,13 @@ static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
   uint32_t j;
   uint32_t i;
   double **CurveT = (double **)malloc(SizeJ * sizeof(double *));
-  *CurveT = (double *)malloc(SizeJ * IV_CURVE_NUM_COMPONENTS * sizeof(double));
-  for (i = 1; i < SizeJ; i++)
+  double **PtsT = (double **)malloc(SizeJ * sizeof(double *));
+  for (i = 0; i < SizeJ; i++)
   {
-    CurveT[i] = *CurveT + i * IV_CURVE_NUM_COMPONENTS;
+    CurveT[i] = (double*)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double));
+    PtsT[i] = (double*)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double));
   }
   
-  double **PtsT = (double **)malloc(SizeJ * sizeof(double *));
-  *PtsT = (double *)malloc(SizeJ * IV_CURVE_NUM_COMPONENTS * sizeof(double));
-  for (i = 1; i < SizeJ; i++)
-  {
-    PtsT[i] = *PtsT + i * IV_CURVE_NUM_COMPONENTS;
-  }
-
   Transpose(pts, PtsT, IV_CURVE_NUM_COMPONENTS, SizeJ);
 
   for (j = 0; j < SizeJ; j++)
@@ -225,15 +243,13 @@ static double DistCurvePts(double ** Curve, double ** pts, uint32_t SizeJ)
     res += min(Dist1, Dist2);
   }
   res /= SizeJ;
-  free(*CurveT); free(*PtsT);
-  free(CurveT); free(PtsT);
-  free(v);
+  CleanUp(CurveT, PtsT, v, NULL);
   return res;
 }
 
 static double Abs(double x)
 {
-	return sqrt(x*x);
+  return sqrt(x * x);
 }
 
 /*
@@ -256,7 +272,7 @@ static int RemoveRepeatsIvc(double ** a, uint32_t SizeJ)
       for (j = i + 1; j <= n - 1; j++)
       {
         Diff = Abs(a[p][i] - a[p][j]);
-		if (Diff < 1.e-10 * min(Abs(a[p][i]), Abs(a[p][j])) || Diff == 000000e+0000)
+        if (Diff < 1.e-10 * min(Abs(a[p][i]), Abs(a[p][j])) || Diff == 000000e+0000)
         {
           for (k = j; k <= n - 1; k++)
           {
@@ -264,7 +280,10 @@ static int RemoveRepeatsIvc(double ** a, uint32_t SizeJ)
             {
               a[p][k] = a[p][k + 1];
             }
-            else a[p][k] =  0.0;
+            else
+            {
+              a[p][k] = 0.0;
+            }
           }
           n = n - 1;
           j = j - 1;
@@ -431,6 +450,7 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
   free(NBasis);
 }
 
+
 /*********************************/
 /*    Public functions     */
 /*********************************/
@@ -455,8 +475,8 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
 {
 
   uint32_t i;
-  double *a_[IV_CURVE_NUM_COMPONENTS];
-  double *b_[IV_CURVE_NUM_COMPONENTS];
+  double **a_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
+  double **b_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
   for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
   {
     a_[i] = (double*)malloc(CurveLength * sizeof(double));
@@ -499,9 +519,10 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
   uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLength);
   if (SizeA < 2)
   {
-	  Score = SCORE_ERROR;
-	  printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
-	  goto cleanup;
+    Score = SCORE_ERROR;
+    printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
+    CleanUp(a_, b_, InCurve, OutCurve);
+    return Score;
   }
   for (i = 0; i < SizeA; i++)
   {
@@ -535,12 +556,13 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       b_[1][i] = b_[1][i] / VarC;
     }
     uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLength);
-	if (SizeB < 2)
-	{
-		Score = SCORE_ERROR;
-		printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
-		goto cleanup;
-	}
+    if (SizeB < 2)
+    {
+      Score = SCORE_ERROR;
+      printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
+      CleanUp(a_, b_, InCurve, OutCurve);
+      return Score;
+    }
     for (i = 0; i < SizeB; i++)
     {
       InCurve[i * IV_CURVE_NUM_COMPONENTS + 1] = b_[0][i];
@@ -562,12 +584,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
     DistCurvePts(a_, b_, SizeB);
     Score = RescaleScore((DistCurvePts(a_, b_, SizeB) + DistCurvePts(b_, a_, SizeB)) / 2.);
   }
-  cleanup:
-  free(InCurve);
-  free(OutCurve);
-  free(*b_);
-  free(*a_);
-  
+  CleanUp(a_, b_, InCurve, OutCurve);
   return Score;
 }
 
