@@ -1,8 +1,8 @@
-# This module test libasa work and check correct work of binding
+# This module test libivcmp work and check correct work of binding
 from __future__ import print_function
 import unittest
 from libivcmp import IvCurve, CompareIvc, MAX_NUM_POINTS, SetMinVC, VOLTAGE_AMPL, R_CS, CURRENT_AMPL
-from ctypes import c_double, c_uint32, c_size_t
+from ctypes import c_double
 import numpy as np
 
 

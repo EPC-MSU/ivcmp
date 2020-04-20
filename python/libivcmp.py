@@ -80,5 +80,5 @@ if __name__ == '__main__':
     SetMinVC(0, 0)
     f = CompareIvc(iv_curve, ivc_curve, MAX_NUM_POINTS)
     print(f)
-    #for i in range(MAX_NUM_POINTS):
-    #    print(iv_curve.currents[i], iv_curve.voltages[i])
+    # for i in range(MAX_NUM_POINTS):
+    #     print(iv_curve.currents[i], iv_curve.voltages[i])
