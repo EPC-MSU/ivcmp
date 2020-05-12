@@ -258,41 +258,32 @@ static double Abs(double x)
 static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 {
   uint32_t i;
-  uint32_t j;
   uint32_t k;
-  uint32_t p;
   uint32_t n;
-  double Diff;
-  uint32_t SizeN = 0;
-  for (p = 0; p < IV_CURVE_NUM_COMPONENTS; p++)
+  uint32_t Diff;
+  n = SizeJ;
+  for (i = 0; i <= n - 2; i++)
   {
-    n = SizeJ;
-    for (i = 0; i <= n - 1; i++)
-    {
-      for (j = i + 1; j <= n - 1; j++)
+	Diff = (Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6);
+    if (Diff == 0)
+	{
+	  for (k = i; k <= n - 1; k++)
       {
-        Diff = Abs(a[p][i] - a[p][j]);
-        if (Diff < 1.e-10 * min(Abs(a[p][i]), Abs(a[p][j])) || Diff == 000000e+0000)
+		if (k + 1 < n)
         {
-          for (k = j; k <= n - 1; k++)
-          {
-            if (k + 1 < n)
-            {
-              a[p][k] = a[p][k + 1];
-            }
-            else
-            {
-              a[p][k] = 0.0;
-            }
-          }
-          n = n - 1;
-          j = j - 1;
+		  a[0][k] = a[0][k + 1];
+		  a[1][k] = a[1][k + 1];
+		}
+		else
+		{
+		  a[0][k] = 0.0;
+		  a[1][k] = 0.0;
         }
-      }
-    }
-    SizeN = max(SizeN, n);
+	  }
+	  n = n - 1;
+	}
   }
-  return SizeN;
+  return n;
 }
 
 /*
@@ -473,7 +464,6 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       double *VoltagesB, double *CurrentsB, 
       uint32_t  CurveLength)
 {
-
   uint32_t i;
   double **a_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
   double **b_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
