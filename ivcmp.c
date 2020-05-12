@@ -249,7 +249,7 @@ static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
 
 static double Abs(double x)
 {
-  return sqrt(x * x);
+	return x > 0 ? x : -x;;
 }
 
 /*
