@@ -427,7 +427,7 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
   Step = (x[NplusC]) / (p1 - 1);
   for (i1 = 1; i1 <= p1; i1++)
   {
-    if ((double)x[NplusC] - t < 5e-40)
+    if ((double)x[NplusC] - t < 0.00000e0)
     {
       t = (double)x[NplusC];
     }
@@ -485,6 +485,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
   
   if (!VoltagesA | !CurrentsA)
   {
+	CleanUp(a_, b_, NULL, NULL);
     return -1;
   }
   for (i = 0; i < CurveLength; i++)
