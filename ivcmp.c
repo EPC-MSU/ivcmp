@@ -302,9 +302,8 @@ static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 */
 static void Knot(uint32_t n, int c, double *x)
 {
-  int NplusC, Nplus2, i;
+  int NplusC, i;
   NplusC = n + c;
-  Nplus2 = n + 2;
 
   x[1] = 0;
   for (i = 2; i <= NplusC; i++){
