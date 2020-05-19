@@ -260,12 +260,15 @@ static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
   uint32_t i;
   uint32_t k;
   uint32_t n;
-  uint32_t Diff;
+  int *Diff = (int *)malloc(SizeJ * sizeof(int));
   n = SizeJ;
   for (i = 0; i <= n - 2; i++)
   {
-	Diff = (Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6);
-    if (Diff == 0)
+	  Diff[i] = (Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6);
+  }
+  for (i = 0; i <= n - 2; i++)
+  {
+    if (Diff[i] == 0)
 	{
 	  for (k = i; k <= n - 1; k++)
       {
@@ -283,6 +286,7 @@ static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 	  n = n - 1;
 	}
   }
+  free(Diff);
   return n;
 }
 
