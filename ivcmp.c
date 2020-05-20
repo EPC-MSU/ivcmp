@@ -529,13 +529,15 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
   {
     OutCurve[i] = 0.;
   }
-  Bspline(SizeA, IV_CURVE_NUM_COMPONENTS, CurveLength, InCurve, OutCurve);
-  for (i = 0; i < SizeA; i++)
+  Bspline(SizeA, 3, CurveLength, InCurve, OutCurve); 
+  //FILE *f;
+  //fopen_s(&f, "spline.txt", "w");
+  for (i = 0; i < CurveLength; i++)
   {
     a_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
     a_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
   }
-  
+  //fclose(f);
   if (!VoltagesB)
   {
     double x = Mean(a_[1], SizeA);
