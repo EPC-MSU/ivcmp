@@ -48,8 +48,8 @@ def _normalize_arg(value, desired_ctype):
 
 class IvCurve(_IterableStructure):
     _fields_ = (
-        ('voltages', c_double*MAX_NUM_POINTS),
-        ('currents', c_double*MAX_NUM_POINTS)
+        ("voltages", c_double*MAX_NUM_POINTS),
+        ("currents", c_double*MAX_NUM_POINTS)
     )
 
 
@@ -69,7 +69,7 @@ def CompareIvc(first_iv_curve, second_iv_curve, size):
     return res
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     iv_curve = IvCurve()
     ivc_curve = IvCurve()
     for i in range(MAX_NUM_POINTS):

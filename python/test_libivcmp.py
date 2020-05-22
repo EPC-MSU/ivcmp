@@ -53,5 +53,5 @@ class TestStringMethods(unittest.TestCase):
         self.assertTrue((res - 0.93) < 0.01)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
