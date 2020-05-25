@@ -305,14 +305,10 @@ static void Knot(uint32_t n, int c, double *x)
   int NplusC, Nplus2, i;
   NplusC = n + c;
   Nplus2 = n + 2;
+
   x[1] = 0;
-  for (i = 2; i <= NplusC; i++)
-  {
-    if ((i > c) && (i < Nplus2))
-    {
-      x[i] = x[i - 1] + 1;
-    }
-    else x[i] = x[i - 1];
+  for (i = 2; i <= NplusC; i++){
+	  x[i] = i - 1;
   }
 }
 
@@ -418,14 +414,13 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 
   Icount = 0;
 
-  t = 0;
-  Step = (x[NplusC]) / (p1 - 1);
-  for (i1 = 1; i1 <= p1; i1++)
-  {
-    if ((double)x[NplusC] - t < 0.00000e0)
-    {
-      t = (double)x[NplusC];
-    }
+  t = k - 1; /* special parameter range for periodic basis functions */
+  Step = ((float)((Npts)-(k - 1))) / ((float)(p1 - 1));
+
+  for (i1 = 1; i1 <= p1; i1++){
+	  if ((float)(Npts)-t < 5e-6){
+		  t = (float)((Npts));
+	  }
     Basis(k, t, Npts, x, NBasis);
     for (j = 1; j <= 2; j++)
     {
@@ -529,7 +524,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
   {
     OutCurve[i] = 0.;
   }
-  Bspline(SizeA, 2, CurveLength, InCurve, OutCurve); 
+  Bspline(SizeA, 3, CurveLength, InCurve, OutCurve); 
   for (i = 0; i < CurveLength; i++)
   {
     a_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
@@ -568,8 +563,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       OutCurve[i] = 0.;
     }
 
-    Bspline(SizeB, 2, CurveLength, InCurve, OutCurve);
-
+    Bspline(SizeB, 3, CurveLength, InCurve, OutCurve);
 	for (i = 0; i < CurveLength; i++)
     {
       b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
