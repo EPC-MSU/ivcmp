@@ -396,13 +396,13 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 {
   uint32_t i, j, Icount, Jcount;
   uint32_t i1;
-  double *x = (double *)malloc(IV_CURVE_NUM_COMPONENTS * Npts * sizeof(double));
   uint32_t NplusC;
   double Step;
   double t;
   double *NBasis = (double *)malloc(IV_CURVE_NUM_COMPONENTS * Npts * sizeof(double));
   double Temp;
   NplusC = Npts + k;
+  double *x = (double *)malloc(IV_CURVE_NUM_COMPONENTS * NplusC * sizeof(double));
 
   for (i = 1; i <= Npts; i++)
   {
@@ -529,18 +529,15 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
   {
     OutCurve[i] = 0.;
   }
-  Bspline(SizeA, 3, CurveLength, InCurve, OutCurve); 
-  //FILE *f;
-  //fopen_s(&f, "spline.txt", "w");
+  Bspline(SizeA, 2, CurveLength, InCurve, OutCurve); 
   for (i = 0; i < CurveLength; i++)
   {
     a_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
     a_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
   }
-  //fclose(f);
   if (!VoltagesB)
   {
-    double x = Mean(a_[1], SizeA);
+	  double x = Mean(a_[1], CurveLength);
     Score = RescaleScore(x * x);
   }
   else
@@ -571,15 +568,14 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       OutCurve[i] = 0.;
     }
 
-    Bspline(SizeB, IV_CURVE_NUM_COMPONENTS, CurveLength, InCurve, OutCurve);
+    Bspline(SizeB, 2, CurveLength, InCurve, OutCurve);
 
-    for (i = 0; i < SizeB; i++)
+	for (i = 0; i < CurveLength; i++)
     {
       b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
       b_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
     }
-    DistCurvePts(a_, b_, SizeB);
-    Score = RescaleScore((DistCurvePts(a_, b_, SizeB) + DistCurvePts(b_, a_, SizeB)) / 2.);
+	Score = RescaleScore((DistCurvePts(a_, b_, CurveLength) + DistCurvePts(b_, a_, CurveLength)) / 2.);
   }
   CleanUp(a_, b_, InCurve, OutCurve);
   return Score;
