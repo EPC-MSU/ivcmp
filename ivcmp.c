@@ -266,7 +266,7 @@ static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
   {
 	  Diff[i] = (Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6);
   }
-  for (i = 0; i <= n - 2; i++)
+  for (i = 0; i <= SizeJ - 2; i++)
   {
     if (Diff[i] == 0)
 	{
@@ -520,7 +520,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
     InCurve[i * IV_CURVE_NUM_COMPONENTS + 2] = a_[1][i];
 
   }
-  for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * SizeA; i++)
+  for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
   {
     OutCurve[i] = 0.;
   }
@@ -558,7 +558,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       InCurve[i * IV_CURVE_NUM_COMPONENTS + 2] = b_[1][i];
     }
 
-    for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * SizeB; i++)
+	for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
     {
       OutCurve[i] = 0.;
     }
