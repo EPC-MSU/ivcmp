@@ -305,14 +305,10 @@ static void Knot(uint32_t n, int c, double *x)
   int NplusC, Nplus2, i;
   NplusC = n + c;
   Nplus2 = n + 2;
+
   x[1] = 0;
-  for (i = 2; i <= NplusC; i++)
-  {
-    if ((i > c) && (i < Nplus2))
-    {
-      x[i] = x[i - 1] + 1;
-    }
-    else x[i] = x[i - 1];
+  for (i = 2; i <= NplusC; i++){
+	  x[i] = i - 1;
   }
 }
 
@@ -396,13 +392,13 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 {
   uint32_t i, j, Icount, Jcount;
   uint32_t i1;
-  double *x = (double *)malloc(IV_CURVE_NUM_COMPONENTS * Npts * sizeof(double));
   uint32_t NplusC;
   double Step;
   double t;
   double *NBasis = (double *)malloc(IV_CURVE_NUM_COMPONENTS * Npts * sizeof(double));
   double Temp;
   NplusC = Npts + k;
+  double *x = (double *)malloc(IV_CURVE_NUM_COMPONENTS * NplusC * sizeof(double));
 
   for (i = 1; i <= Npts; i++)
   {
@@ -418,14 +414,13 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 
   Icount = 0;
 
-  t = 0;
-  Step = (x[NplusC]) / (p1 - 1);
-  for (i1 = 1; i1 <= p1; i1++)
-  {
-    if ((double)x[NplusC] - t < 0.00000e0)
-    {
-      t = (double)x[NplusC];
-    }
+  t = k - 1; /* special parameter range for periodic basis functions */
+  Step = ((float)((Npts)-(k - 1))) / ((float)(p1 - 1));
+
+  for (i1 = 1; i1 <= p1; i1++){
+	  if ((float)(Npts)-t < 5e-6){
+		  t = (float)((Npts));
+	  }
     Basis(k, t, Npts, x, NBasis);
     for (j = 1; j <= 2; j++)
     {
@@ -529,16 +524,15 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
   {
     OutCurve[i] = 0.;
   }
-  Bspline(SizeA, IV_CURVE_NUM_COMPONENTS, CurveLength, InCurve, OutCurve);
-  for (i = 0; i < SizeA; i++)
+  Bspline(SizeA, 3, CurveLength, InCurve, OutCurve); 
+  for (i = 0; i < CurveLength; i++)
   {
     a_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
     a_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
   }
-  
   if (!VoltagesB)
   {
-    double x = Mean(a_[1], SizeA);
+	  double x = Mean(a_[1], CurveLength);
     Score = RescaleScore(x * x);
   }
   else
@@ -569,15 +563,13 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
       OutCurve[i] = 0.;
     }
 
-    Bspline(SizeB, IV_CURVE_NUM_COMPONENTS, CurveLength, InCurve, OutCurve);
-
-    for (i = 0; i < SizeB; i++)
+    Bspline(SizeB, 3, CurveLength, InCurve, OutCurve);
+	for (i = 0; i < CurveLength; i++)
     {
       b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
       b_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
     }
-    DistCurvePts(a_, b_, SizeB);
-    Score = RescaleScore((DistCurvePts(a_, b_, SizeB) + DistCurvePts(b_, a_, SizeB)) / 2.);
+	Score = RescaleScore((DistCurvePts(a_, b_, CurveLength) + DistCurvePts(b_, a_, CurveLength)) / 2.);
   }
   CleanUp(a_, b_, InCurve, OutCurve);
   return Score;
