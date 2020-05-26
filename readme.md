@@ -31,7 +31,6 @@ make
 
 Запуск:
 ```
-export LD_LIBRARY_PATH=/path/to/libivcmp
 ./ivcmpexample
 ```
 
@@ -51,8 +50,7 @@ export LD_LIBRARY_PATH=/path/to/libivcmp
 Далее, в зависимости от желаемого типа проекта:
 
 *Для Visual Studio 2013*
-* Выбрать Visual Studio 2013, нажать Finish. Важно выбирать именно Visual Studio 2013, а не, например, Visual Studio 2013 x64! Сборка работает корректно только для 32 бит 
-
+* Выбрать Visual Studio 2013, нажать Finish.
 * Нажать Generate, затем Open project
 
 * Появится окно Visual Studio с проектом. Дальше собрать кнопкой Build, как обычный MSVC проект

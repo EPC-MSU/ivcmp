@@ -9,8 +9,8 @@
 
 Запуск libivcmp.py на Linux:
     Сгенерировать динамическую библиотеку с помощью Makefile (см. ivcmp-src/readme.md)
-    В libivcmp.py прописать путь к библиотеке: CDLL("/home/user/.../libivcmp.so")
-    export LD_LIBRARY_PATH=/path/to/libivcmp
+    В libivcmp.py прописать путь к библиотеке: CDLL("../build/libivcmp.so")
+    export LD_LIBRARY_PATH=../build/libivcmp.so
     Запустить:
     python libivcmp.py
 
