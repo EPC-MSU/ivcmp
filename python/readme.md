@@ -12,6 +12,6 @@
     В libivcmp.py прописать путь к библиотеке: CDLL("../build/libivcmp.so")
     export LD_LIBRARY_PATH=../build/libivcmp.so
     Запустить:
-    python libivcmp.py
+    python3 libivcmp.py
 
     Аналогично для test_libivcmp.py
