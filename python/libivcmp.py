@@ -17,7 +17,7 @@ def _get_dll():
 
 
 lib = _get_dll()
-MAX_NUM_POINTS = 10
+MAX_NUM_POINTS = 1000
 
 
 class _IterableStructure(Structure):
