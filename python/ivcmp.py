@@ -49,8 +49,11 @@ def _normalize_arg(value, desired_ctype):
 class IvCurve(_IterableStructure):
     _fields_ = (
         ("voltages", c_double*MAX_NUM_POINTS),
-        ("currents", c_double*MAX_NUM_POINTS)
+        ("currents", c_double*MAX_NUM_POINTS),
+        ("length", c_size_t)
     )
+    def __init__(self):
+        self.length = MAX_NUM_POINTS
 
 
 def SetMinVC(min_var_v, min_var_c):
@@ -59,12 +62,12 @@ def SetMinVC(min_var_v, min_var_c):
     lib_func(c_double(min_var_v),  c_double(min_var_c))
 
 
-def CompareIvc(first_iv_curve, second_iv_curve, size):
+def CompareIvc(first_iv_curve, second_iv_curve):
     lib_func = lib.CompareIVC
-    lib_func.argtype = POINTER(c_double), POINTER(c_double), POINTER(c_double), POINTER(c_double), c_size_t
+    lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
     lib_func.restype = c_double
-    res = lib_func(first_iv_curve.voltages, first_iv_curve.currents,
-                   second_iv_curve.voltages, second_iv_curve.currents, c_size_t(size))
+    res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, first_iv_curve.length,
+                   second_iv_curve.voltages, second_iv_curve.currents, second_iv_curve.length)
     res = _normalize_arg(res, c_double)
     return res
 
@@ -78,7 +81,7 @@ if __name__ == "__main__":
         ivc_curve.voltages[i] = VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
         ivc_curve.currents[i] = CURRENT_AMPL * np.cos(2 * 3.14 * i / MAX_NUM_POINTS)
     SetMinVC(0, 0)
-    f = CompareIvc(iv_curve, ivc_curve, MAX_NUM_POINTS)
+    f = CompareIvc(iv_curve, ivc_curve)
     print(f)
     # for i in range(MAX_NUM_POINTS):
     #     print(iv_curve.currents[i], iv_curve.voltages[i])

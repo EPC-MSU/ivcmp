@@ -53,9 +53,8 @@ EXPORT void CCONV SetMinVC(double NewMinV, double NewMinC);
  * @param[in] CurveLength Kоличество точек кривой
  * @param[out] Score Степень различия
  */
-EXPORT double CCONV CompareIVC(double *VoltagesA, double *CurrentsA,
-                               double *VoltagesB, double *CurrentsB,
-                               uint32_t CurveLength);
+EXPORT double CCONV CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
+                               double *VoltagesB, double *CurrentsB, uint32_t CurveLengthB);
 #ifdef __cplusplus
 }
 #endif

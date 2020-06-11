@@ -60,9 +60,8 @@ int main(void)
   SetMinVC(0.1, 0.1);
 
   printf("--- Test 1. Compare same curves.\n");
-  ResultScore = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, 
-               IVCResistor1.Voltages, IVCResistor1.Currents,
-               MAX_NUM_POINTS);
+  ResultScore = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
+                           IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS);
   printf("Got Score = %.2lf, should be 0.\n", ResultScore);
   if (fabs(ResultScore) > 0.1)
   {
@@ -71,9 +70,8 @@ int main(void)
   }
 
   printf("--- Test 2. Compare absolutely different curves.\n");
-  ResultScore = CompareIVC(IVCOpenCircuit.Voltages, IVCOpenCircuit.Currents, 
-               IVCShortCircuit.Voltages, IVCShortCircuit.Currents,
-               MAX_NUM_POINTS);
+  ResultScore = CompareIVC(IVCOpenCircuit.Voltages, IVCOpenCircuit.Currents, MAX_NUM_POINTS,
+                           IVCShortCircuit.Voltages, IVCShortCircuit.Currents, MAX_NUM_POINTS);
   printf("Got Score = %.2lf, should be 1.\n", ResultScore);
   if (fabs(ResultScore - 1) > 0.1)
   {
@@ -82,9 +80,8 @@ int main(void)
   }
 
   printf("--- Test 3. Compare similar curves.\n");
-  ResultScore = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, 
-               IVCResistor2.Voltages, IVCResistor2.Currents,
-               MAX_NUM_POINTS);
+  ResultScore = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
+                           IVCResistor2.Voltages, IVCResistor2.Currents, MAX_NUM_POINTS);
   printf("Got Score = %.2lf, should be 0.18.\n", ResultScore);
   if (fabs(ResultScore - 0.18) > 0.1)
   {
@@ -93,14 +90,35 @@ int main(void)
   }
 
   printf("--- Test 4. Compare different curves.\n");
-  ResultScore = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, 
-               IVCCapacitor.Voltages, IVCCapacitor.Currents,
-               MAX_NUM_POINTS);
+  ResultScore = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
+                           IVCCapacitor.Voltages, IVCCapacitor.Currents, MAX_NUM_POINTS);
   printf("Got Score = %.2lf, should be 1.\n", ResultScore);
   if (fabs(ResultScore - 1) > 0.1)
   {
     printf("Test failed!!!\n");
     return -1;
+  }
+
+  printf("--- Test 5. Compare curves with different length.\n");
+
+  double ResultScore1, ResultScore2;
+  ResultScore1 = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
+	                       IVCResistor2.Voltages, IVCResistor2.Currents, 20);
+
+  // Same test but curves are swapped
+  ResultScore2 = CompareIVC(IVCResistor2.Voltages, IVCResistor2.Currents, 20,
+	                       IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS);
+  printf("Score 1 = %.2lf, Score 2 = %.2lf (should be the same).\n", ResultScore1, ResultScore2);
+  if (fabs(ResultScore2 - ResultScore1) > 0.1)
+  {
+	  printf("Test failed!!!\n");
+	  return -1;
+  }
+
+  if (ResultScore1 < 0)
+  {
+	  printf("Test failed!!!\n");
+	  return -1;
   }
 
   printf("All tests successfully passed.\n");
