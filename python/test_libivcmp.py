@@ -58,18 +58,18 @@ class TestStringMethods(unittest.TestCase):
         for i in range(MAX_NUM_POINTS):
             self.IVCResistor1.voltages[i] = 0.5 * VOLTAGE_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
             self.IVCResistor1.currents[i] = 0.5 * CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
-        
+
         self.IVCCapacitor.length = 20
         for i in range(self.IVCCapacitor.length):
             self.IVCCapacitor.voltages[i] = VOLTAGE_AMPL * np.sin(2 * np.pi * i / self.IVCCapacitor.length)
             self.IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / self.IVCCapacitor.length)
-        
+
         SetMinVC(0, 0)
         res1 = CompareIvc(self.IVCResistor1, self.IVCCapacitor)
         res2 = CompareIvc(self.IVCResistor1, self.IVCCapacitor)
         self.assertTrue((res1 - res2) < 0.1)
         self.assertTrue(res1 > 0)
-        
+
 
 if __name__ == "__main__":
     unittest.main()

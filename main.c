@@ -103,22 +103,22 @@ int main(void)
 
   double ResultScore1, ResultScore2;
   ResultScore1 = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
-	                       IVCResistor2.Voltages, IVCResistor2.Currents, 20);
+                           IVCResistor2.Voltages, IVCResistor2.Currents, 20);
 
   // Same test but curves are swapped
   ResultScore2 = CompareIVC(IVCResistor2.Voltages, IVCResistor2.Currents, 20,
-	                       IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS);
+                           IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS);
   printf("Score 1 = %.2lf, Score 2 = %.2lf (should be the same).\n", ResultScore1, ResultScore2);
   if (fabs(ResultScore2 - ResultScore1) > 0.1)
   {
-	  printf("Test failed!!!\n");
-	  return -1;
+      printf("Test failed!!!\n");
+      return -1;
   }
 
   if (ResultScore1 < 0)
   {
-	  printf("Test failed!!!\n");
-	  return -1;
+      printf("Test failed!!!\n");
+      return -1;
   }
 
   printf("All tests successfully passed.\n");
