@@ -52,6 +52,7 @@ class IvCurve(_IterableStructure):
         ("currents", c_double*MAX_NUM_POINTS),
         ("length", c_size_t)
     )
+
     def __init__(self):
         self.length = MAX_NUM_POINTS
 
