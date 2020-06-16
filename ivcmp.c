@@ -14,8 +14,6 @@
 #define min(a, b) (((a<b))?(a):(b))
 #define max(a, b) (((a>b))?(a):(b))
 #endif
-//#define min(a, b) (((a<b))?(a):(b))
-//#define max(a, b) (((a>b))?(a):(b))
 #define IV_CURVE_NUM_COMPONENTS 2
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
@@ -153,10 +151,13 @@ static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
   double *v1 = (double *)malloc(SizeArr * sizeof(double));
   double *v2 = (double *)malloc(SizeArr * sizeof(double));
   double Result;
+  double SegLen2;
+  double Proj;
+  
   SubtractVec(b, a, v1, SizeArr);
   SubtractVec(p, a, v2, SizeArr);
-  double SegLen2 = Dot(v1, v1, SizeArr);
-  double Proj = Dot(v1, v2, SizeArr) / SegLen2;
+  SegLen2 = Dot(v1, v1, SizeArr);
+  Proj = Dot(v1, v2, SizeArr) / SegLen2;
   if (Proj > 1)
   {
     SubtractVec(p, b, v1, SizeArr);
@@ -396,8 +397,10 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
   double t;
   double *NBasis = (double *)malloc(IV_CURVE_NUM_COMPONENTS * Npts * sizeof(double));
   double Temp;
+  double *x;
+  
   NplusC = Npts + k;
-  double *x = (double *)malloc(IV_CURVE_NUM_COMPONENTS * NplusC * sizeof(double));
+  x = (double *)malloc(IV_CURVE_NUM_COMPONENTS * NplusC * sizeof(double));
 
   for (i = 1; i <= Npts; i++)
   {
@@ -464,6 +467,12 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
   uint32_t i;
 
   const uint32_t CurveLength = max(CurveLengthA, CurveLengthB);
+  double VarV, VarC;
+  double Score;
+  double _c, _v, x;
+  double *InCurve, *OutCurve;
+  uint32_t SizeA, SizeB;
+  
   double **a_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
   double **b_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
   for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
@@ -490,10 +499,8 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
       b_[1][i] = CurrentsB[i];
     }
   }
-  double VarV, VarC;
-  double Score;
-  double _v = max(sqrt(Disp(a_[0], CurveLengthA)), sqrt(Disp(b_[0], CurveLengthB)));
-  double _c = max(sqrt(Disp(a_[1], CurveLengthA)), sqrt(Disp(b_[1], CurveLengthB)));
+  _v = max(sqrt(Disp(a_[0], CurveLengthA)), sqrt(Disp(b_[0], CurveLengthB)));
+  _c = max(sqrt(Disp(a_[1], CurveLengthA)), sqrt(Disp(b_[1], CurveLengthB)));
   VarV = max(_v, MinVarV);
   VarC = max(_c, MinVarC);
   SubtractVar(a_[0], Mean(a_[0], CurveLengthA), a_[0], CurveLengthA);
@@ -505,9 +512,9 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
 
   }
 
-  double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
-  double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
-  uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLengthA);
+  InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
+  OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
+  SizeA = RemoveRepeatsIvc(a_, CurveLengthA);
   if (SizeA < 2)
   {
     Score = SCORE_ERROR;
@@ -532,7 +539,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
   }
   if (!VoltagesB)
   {
-      double x = Mean(a_[1], CurveLengthB);
+      x = Mean(a_[1], CurveLengthB);
     Score = RescaleScore(x * x);
   }
   else
@@ -544,7 +551,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
       b_[0][i] = b_[0][i] / VarV;
       b_[1][i] = b_[1][i] / VarC;
     }
-    uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLengthB);
+    SizeB = RemoveRepeatsIvc(b_, CurveLengthB);
     if (SizeB < 2)
     {
       Score = SCORE_ERROR;

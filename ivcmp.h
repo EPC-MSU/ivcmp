@@ -59,4 +59,4 @@ EXPORT double CCONV CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t Cu
 }
 #endif
 
-#endif // IVCMP_H
+#endif /* IVCMP_H */
