@@ -12,6 +12,6 @@
     В ivcmp.py прописать абсолютный путь к библиотеке: CDLL("path/to/libivcmp.so")
     Выполнить в консоли команду `export LD_LIBRARY_PATH=path/to/libivcmp.so`
     Запустить в этой же консоли:
-    python libivcmp.py
+    python3 libivcmp.py
 
     Аналогично для test_libivcmp.py
