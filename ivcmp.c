@@ -270,12 +270,13 @@ static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
   {
     if (Diff[i] == 0)
 	{
-	  for (k = i; k <= n - 1; k++)
+	  for (k = i; k < n; k++)
       {
 		if (k + 1 < n)
         {
 		  a[0][k] = a[0][k + 1];
 		  a[1][k] = a[1][k + 1];
+		  Diff[k] = Diff[k + 1];
 		}
 		else
 		{
