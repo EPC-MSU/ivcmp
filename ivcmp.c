@@ -508,7 +508,6 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
   double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLength);
-  printf("SizeA: %d\n", SizeA);
   if (SizeA < 2)
   {
     Score = SCORE_ERROR;
