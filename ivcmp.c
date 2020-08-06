@@ -258,37 +258,18 @@ static double Abs(double x)
 static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 {
   uint32_t i;
-  uint32_t j;
-  uint32_t k;
   uint32_t n;
-  int *Diff = (int *)malloc(SizeJ * sizeof(int));
-  n = SizeJ;
-  Diff[0] = 1;
-  for (i = 1; i <= n - 2; i++)
+  n = 0;
+  for (i = 0; i < SizeJ - 1; i++)
   {
-	  Diff[i] = (Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6);
+    if ((Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6))
+    {
+      a[0][n] = a[0][i];
+      a[1][n++] = a[1][i];
+    }
   }
-  i = 0;
-  for (j = 1; j < SizeJ; j++)
-  {
-    if (Diff[i] == 0)
-	{
-		for (k = i; k < n - 1; k++)
-		{
-			a[0][k] = a[0][k + 1];
-			a[1][k] = a[1][k + 1];
-			Diff[k] = Diff[k + 1];
-		}
-	  n = n - 1;
-	  a[0][n] = 0.0;
-	  a[1][n] = 0.0;
-	}
-	else
-	{
-		i++;
-	}
-  }
-  free(Diff);
+  a[0][n] = a[0][SizeJ - 1];
+  a[1][n++] = a[1][SizeJ - 1];
   return n;
 }
 
