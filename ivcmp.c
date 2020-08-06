@@ -258,33 +258,34 @@ static double Abs(double x)
 static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 {
   uint32_t i;
+  uint32_t j;
   uint32_t k;
   uint32_t n;
   int *Diff = (int *)malloc(SizeJ * sizeof(int));
   n = SizeJ;
-  for (i = 0; i <= n - 2; i++)
+  Diff[0] = 1;
+  for (i = 1; i <= n - 2; i++)
   {
 	  Diff[i] = (Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6);
   }
-  for (i = 0; i <= SizeJ - 2; i++)
+  i = 0;
+  for (j = 1; j < SizeJ; j++)
   {
     if (Diff[i] == 0)
 	{
-	  for (k = i; k < n; k++)
-      {
-		if (k + 1 < n)
-        {
-		  a[0][k] = a[0][k + 1];
-		  a[1][k] = a[1][k + 1];
-		  Diff[k] = Diff[k + 1];
-		}
-		else
+		for (k = i; k < n - 1; k++)
 		{
-		  a[0][k] = 0.0;
-		  a[1][k] = 0.0;
-        }
-	  }
+			a[0][k] = a[0][k + 1];
+			a[1][k] = a[1][k + 1];
+			Diff[k] = Diff[k + 1];
+		}
 	  n = n - 1;
+	  a[0][n] = 0.0;
+	  a[1][n] = 0.0;
+	}
+	else
+	{
+		i++;
 	}
   }
   free(Diff);
@@ -507,6 +508,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA,
   double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLength);
+  printf("SizeA: %d\n", SizeA);
   if (SizeA < 2)
   {
     Score = SCORE_ERROR;
