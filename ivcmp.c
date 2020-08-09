@@ -1,4 +1,4 @@
-/* This is module compares two iv-curves and returnes Score (0-100 %)
+/* This module compares two iv-curves and returnes Score from 0.0 to 1.0
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -26,8 +26,13 @@ static double MinVarV, MinVarC;
 /*  Internal functions     */
 /*********************************/
 
-/*
+/**
 * Returns the difference vector of two vectors
+* 
+* @param[in] a first vector
+* @param[in] b vector to subtract
+* @param[out] v resulting vector
+* @param[in] SizeArr vector length
 */
 static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
 {
@@ -38,8 +43,13 @@ static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
   }
 }
 
-/*
+/**
 * Returns the difference vector of vector and variable
+* 
+* @param[in] a first vector
+* @param[in] b variable
+* @param[out] v resulting vector
+* @param[in] SizeArr vector length
 */
 static void SubtractVar(double *a, double b, double *v, uint32_t SizeArr)
 {
@@ -50,8 +60,13 @@ static void SubtractVar(double *a, double b, double *v, uint32_t SizeArr)
   }
 }
 
-/*
+/**
 * Returns the vector mean
+*
+* @param[in] mas vector
+* @param[in] SizeArr vector length
+*
+* @return mean of 'mas'
 */
 static double Mean(double *mas, uint32_t SizeArr)
 {
@@ -64,8 +79,14 @@ static double Mean(double *mas, uint32_t SizeArr)
   return avg / SizeArr;
 }
 
-/*
+/**
 * Returns the scalar product of two vectors
+*
+* @param[in] a first vector
+* @param[in] b second vector
+* @param[in] SizeArr vector length
+*
+* @return scalar product of 'a' and 'b'
 */
 static double Dot(double *a, double *b, uint32_t SizeArr)
 {
@@ -80,8 +101,14 @@ static double Dot(double *a, double *b, uint32_t SizeArr)
   return sum;
 }
 
-/*
+/**
 * Returns the vector product of two vectors
+*
+* @param[in] a first vector
+* @param[in] b second vector
+* @param[in] SizeArr vector length
+*
+* @return vector product of 'a' and 'b'
 */
 static double Cross(double *a, double *b)
 {
@@ -89,7 +116,12 @@ static double Cross(double *a, double *b)
 }
 
 /*
-* Clean two double massive and one-two dinamic massive
+* Clean two double matrixes and two or less dynamic massives
+*
+* @param[in] Matrix1 first double matrix
+* @param[in] Matrix2 second double matrix
+* @param[in] Massive1 first double array
+* @param[in] Massive2 second double array
 */
 static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double *Massive2)
 {
@@ -111,8 +143,13 @@ static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double
   }
 }
 
-/*
-* Returns the dispersion of vector
+/**
+* Returns the dispersion of the vector
+*
+* @param[im] mas vector
+* @param[in] SizeArr vector length
+*
+* @return ('mas' - mean of the 'mas') ^ 2
 */
 static double Disp(double *mas, uint32_t SizeArr)
 {
@@ -129,8 +166,13 @@ static double Disp(double *mas, uint32_t SizeArr)
   return avg;
 }
 
-/*
-* Returns the transpoted matrix
+/**
+* Returns the transposed matrix
+*
+* @param[in] m matrix
+* @param[out] m_t transposed matrix
+* @param[in] Size_I number of lines in 'm'
+* @param[in] SIze_J number of columns in 'm'
 */
 static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
 {
@@ -145,8 +187,15 @@ static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
   }
 }
 
-/*
-* Returns the distance between 3 points
+/**
+* Returns the distance between a point and a segment
+*
+* @param[in] p point
+* @param[in] a first end of a segment
+* @param[in] b second end of a segment
+* @param[in] SizeArr dimension
+*
+* @return distance
 */
 static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
 {
@@ -172,16 +221,26 @@ static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
   return Result;
 }
 
-/*
+/**
 * Updates Score value
+*
+* @param[in] x average sum of distances between two curves
+*
+* @return score 
 */
 static double RescaleScore(double x)
 {
   return 1 - exp(-8 * x);
 }
 
-/*
+/**
 * Returns all distances of two iv_curves
+*
+* @param[in] Curve first curve
+* @param[in] pts second curve
+* @param[in] SizeJ number of points in the curves
+*
+* @return normalized sum of distances
 */
 static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
 {
@@ -252,8 +311,13 @@ static double Abs(double x)
 	return x > 0 ? x : -x;;
 }
 
-/*
-* Removes repeates data in curve
+/**
+* Removes repeated data in curve
+*
+* @param a curve
+* @param[in] SizeJ number of points in the curve
+*
+* @return number of points in the cleaned curve
 */
 static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 {
@@ -273,15 +337,14 @@ static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
   return n;
 }
 
-/*
-* Subroutine to generate a B-spline open knot vector with multiplicity
-  equal to the order at the ends.
-  
-  c      = order of the basis function
-  n      = the number of defining polygon vertices
-  Nplus2     = index of x() for the first occurence of the maximum knot vector value
-  NplusC     = maximum value of the knot vector -- $n + c$
-  x()      = array containing the knot vector
+/**
+* Subroutine to generate a B-spline knot vector
+ * 
+ * @param[in] n number of defining polygon vertices
+ * @param[in] c order of the basis function
+ * @param[out] x knot vector
+ * 
+ * @note NplusC is the maximum value of the knot vector 'x'
 */
 static void Knot(uint32_t n, int c, double *x)
 {
@@ -294,18 +357,18 @@ static void Knot(uint32_t n, int c, double *x)
   }
 }
 
-/*
-* Subroutine to generate B-spline basis functions for open knot vectors
-c    = order of the B-spline basis function
-d    = first term of the basis function recursion relation
-e    = second term of the basis function recursion relation
-Npts   = number of defining polygon vertices
-n[]    = array containing the basis functions
-n[1] contains the basis function associated with B1 etc.
-NplusC   = constant -- Npts + c -- maximum number of knot values
-t    = parameter value
-Temp[]   = Temporary array
-x[]    = knot vector
+/**
+* Subroutine to generate B-spline basis functions for knot vectors. Uses Cox-de Boor recursive relation.
+*
+* @param[in] c order of the B-spline basis function
+* @param[in] t parameter in the Cox-de Boor formula
+* @param[in] Npts number of defining polygon vertices
+* @param[in] x knot vector
+* @param[out] n array containing the basis functions
+*
+* @note d is the first part of the basis function recursive relation
+* @note e is the second part of the basis function recursive relation
+* @note NplusC the maximum number of knot values 'Npts' + 'c'
 */
 static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
 {
@@ -352,23 +415,23 @@ static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
   free(Temp);
 }
 
-/*  
+/**
 * Subroutine to generate a B-spline curve using an uniform open knot vector
-b[]    = array containing the defining polygon vertices
-b[1] contains the x-component of the vertex
-b[2] contains the y-component of the vertex
-b[3] contains the z-component of the vertex
-k       = order of the \bsp basis function
-NBasis    = array containing the basis functions for a single value of t
-NplusC    = number of knot values
-Npts    = number of defining polygon vertices
-p[,]    = array containing the curve points
-p[1] contains the x-component of the point
-p[2] contains the y-component of the point
-p[3] contains the z-component of the point
-p1      = number of points to be calculated on the curve
-t       = parameter value 0 <= t <= 1
-x[]     = array containing the knot vector
+*
+* @param[in] Npts number of defining polygon vertices
+* @param[in] k order of the B-spline basis function
+* @param[in] p1 number of points to be calculated on the curve
+* @param[in] b array containing the defining polygon vertices
+* @param[out] p array containing the curve points
+*
+* @note b[1], b[3]... contain the x-component of the vertex
+* @note b[2], b[4]... contain the y-component of the vertex
+* @note NBasis is the array containing the basis functions for a single value of t
+* @note NplusC is the number of knot values
+* @note p[1], p[3]... contain the x-component of the point
+* @note p[2], p[4]... contain the y-component of the point
+* @note t is the parameter value used in Cox-de Boor formula
+* @note x is the array containing the knot vector
 */
 static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p)
 {
@@ -427,6 +490,12 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 /*    Public functions     */
 /*********************************/
 
+/**
+ * Sets noise for voltages and currents
+ * 
+ * @param NewMinV new voltage noise
+ * @param NewMinC new current noise
+ */
 void SetMinVC(double NewMinV, double NewMinC)
 {
   if (NewMinV > 0 && NewMinC > 0)
@@ -441,6 +510,17 @@ void SetMinVC(double NewMinV, double NewMinC)
   }
 }
 
+/**
+ * Compares two curves
+ * 
+ * @param[in] VoltagesA voltages of the first curve
+ * @param[in] CurrentsA currents of the first curve
+ * @param[in] VoltagesB voltages of the second curve
+ * @param[in] CurrentsB currents of the second curve
+ * @param[in] CurveLength number of points in the curves
+ * 
+ * @return score of difference between the curves; 1.0 for completely different curves, 0.0 for same curves
+ */
 double CompareIVC(double *VoltagesA, double *CurrentsA, 
       double *VoltagesB, double *CurrentsB, 
       uint32_t  CurveLength)
