@@ -1,4 +1,4 @@
-/* This is module compares two iv-curves and returnes Score (0-100 %)
+/* This module compares two iv-curves and returnes Score from 0.0 to 1.0
 */
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,6 +14,8 @@
 #define min(a, b) (((a<b))?(a):(b))
 #define max(a, b) (((a>b))?(a):(b))
 #endif
+//#define min(a, b) (((a<b))?(a):(b))
+//#define max(a, b) (((a>b))?(a):(b))
 #define IV_CURVE_NUM_COMPONENTS 2
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
@@ -24,8 +26,13 @@ static double MinVarV, MinVarC;
 /*  Internal functions     */
 /*********************************/
 
-/*
+/**
 * Returns the difference vector of two vectors
+* 
+* @param[in] a first vector
+* @param[in] b vector to subtract
+* @param[out] v resulting vector
+* @param[in] SizeArr vector length
 */
 static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
 {
@@ -36,8 +43,13 @@ static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
   }
 }
 
-/*
+/**
 * Returns the difference vector of vector and variable
+* 
+* @param[in] a first vector
+* @param[in] b variable
+* @param[out] v resulting vector
+* @param[in] SizeArr vector length
 */
 static void SubtractVar(double *a, double b, double *v, uint32_t SizeArr)
 {
@@ -48,8 +60,13 @@ static void SubtractVar(double *a, double b, double *v, uint32_t SizeArr)
   }
 }
 
-/*
+/**
 * Returns the vector mean
+*
+* @param[in] mas vector
+* @param[in] SizeArr vector length
+*
+* @return mean of 'mas'
 */
 static double Mean(double *mas, uint32_t SizeArr)
 {
@@ -62,8 +79,14 @@ static double Mean(double *mas, uint32_t SizeArr)
   return avg / SizeArr;
 }
 
-/*
+/**
 * Returns the scalar product of two vectors
+*
+* @param[in] a first vector
+* @param[in] b second vector
+* @param[in] SizeArr vector length
+*
+* @return scalar product of 'a' and 'b'
 */
 static double Dot(double *a, double *b, uint32_t SizeArr)
 {
@@ -78,8 +101,14 @@ static double Dot(double *a, double *b, uint32_t SizeArr)
   return sum;
 }
 
-/*
+/**
 * Returns the vector product of two vectors
+*
+* @param[in] a first vector
+* @param[in] b second vector
+* @param[in] SizeArr vector length
+*
+* @return vector product of 'a' and 'b'
 */
 static double Cross(double *a, double *b)
 {
@@ -87,7 +116,12 @@ static double Cross(double *a, double *b)
 }
 
 /*
-* Clean two double massive and one-two dinamic massive
+* Clean two double matrixes and two or less dynamic massives
+*
+* @param[in] Matrix1 first double matrix
+* @param[in] Matrix2 second double matrix
+* @param[in] Massive1 first double array
+* @param[in] Massive2 second double array
 */
 static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double *Massive2)
 {
@@ -109,8 +143,13 @@ static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double
   }
 }
 
-/*
-* Returns the dispersion of vector
+/**
+* Returns the dispersion of the vector
+*
+* @param[im] mas vector
+* @param[in] SizeArr vector length
+*
+* @return ('mas' - mean of the 'mas') ^ 2
 */
 static double Disp(double *mas, uint32_t SizeArr)
 {
@@ -127,8 +166,13 @@ static double Disp(double *mas, uint32_t SizeArr)
   return avg;
 }
 
-/*
-* Returns the transpoted matrix
+/**
+* Returns the transposed matrix
+*
+* @param[in] m matrix
+* @param[out] m_t transposed matrix
+* @param[in] Size_I number of lines in 'm'
+* @param[in] SIze_J number of columns in 'm'
 */
 static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
 {
@@ -143,21 +187,25 @@ static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
   }
 }
 
-/*
-* Returns the distance between 3 points
+/**
+* Returns the distance between a point and a segment
+*
+* @param[in] p point
+* @param[in] a first end of a segment
+* @param[in] b second end of a segment
+* @param[in] SizeArr dimension
+*
+* @return distance
 */
 static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
 {
   double *v1 = (double *)malloc(SizeArr * sizeof(double));
   double *v2 = (double *)malloc(SizeArr * sizeof(double));
   double Result;
-  double SegLen2;
-  double Proj;
-  
   SubtractVec(b, a, v1, SizeArr);
   SubtractVec(p, a, v2, SizeArr);
-  SegLen2 = Dot(v1, v1, SizeArr);
-  Proj = Dot(v1, v2, SizeArr) / SegLen2;
+  double SegLen2 = Dot(v1, v1, SizeArr);
+  double Proj = Dot(v1, v2, SizeArr) / SegLen2;
   if (Proj > 1)
   {
     SubtractVec(p, b, v1, SizeArr);
@@ -173,16 +221,26 @@ static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
   return Result;
 }
 
-/*
+/**
 * Updates Score value
+*
+* @param[in] x average sum of distances between two curves
+*
+* @return score 
 */
 static double RescaleScore(double x)
 {
   return 1 - exp(-8 * x);
 }
 
-/*
+/**
 * Returns all distances of two iv_curves
+*
+* @param[in] Curve first curve
+* @param[in] pts second curve
+* @param[in] SizeJ number of points in the curves
+*
+* @return normalized sum of distances
 */
 static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
 {
@@ -250,56 +308,43 @@ static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
 
 static double Abs(double x)
 {
-    return x > 0 ? x : -x;;
+	return x > 0 ? x : -x;;
 }
 
-/*
-* Removes repeates data in curve
+/**
+* Removes repeated data in curve
+*
+* @param a curve
+* @param[in] SizeJ number of points in the curve
+*
+* @return number of points in the cleaned curve
 */
 static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 {
   uint32_t i;
-  uint32_t k;
   uint32_t n;
-  int *Diff = (int *)malloc(SizeJ * sizeof(int));
-  n = SizeJ;
-  for (i = 0; i <= n - 2; i++)
+  n = 0;
+  for (i = 0; i < SizeJ - 1; i++)
   {
-      Diff[i] = (Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6);
-  }
-  for (i = 0; i <= SizeJ - 2; i++)
-  {
-    if (Diff[i] == 0)
+    if ((Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6))
     {
-      for (k = i; k <= n - 1; k++)
-      {
-        if (k + 1 < n)
-        {
-          a[0][k] = a[0][k + 1];
-          a[1][k] = a[1][k + 1];
-        }
-        else
-        {
-          a[0][k] = 0.0;
-          a[1][k] = 0.0;
-        }
-      }
-      n = n - 1;
+      a[0][n] = a[0][i];
+      a[1][n++] = a[1][i];
     }
   }
-  free(Diff);
+  a[0][n] = a[0][SizeJ - 1];
+  a[1][n++] = a[1][SizeJ - 1];
   return n;
 }
 
-/*
-* Subroutine to generate a B-spline open knot vector with multiplicity
-  equal to the order at the ends.
-  
-  c      = order of the basis function
-  n      = the number of defining polygon vertices
-  Nplus2     = index of x() for the first occurence of the maximum knot vector value
-  NplusC     = maximum value of the knot vector -- $n + c$
-  x()      = array containing the knot vector
+/**
+* Subroutine to generate a B-spline knot vector
+ * 
+ * @param[in] n number of defining polygon vertices
+ * @param[in] c order of the basis function
+ * @param[out] x knot vector
+ * 
+ * @note NplusC is the maximum value of the knot vector 'x'
 */
 static void Knot(uint32_t n, int c, double *x)
 {
@@ -308,22 +353,22 @@ static void Knot(uint32_t n, int c, double *x)
 
   x[1] = 0;
   for (i = 2; i <= NplusC; i++){
-      x[i] = i - 1;
+	  x[i] = i - 1;
   }
 }
 
-/*
-* Subroutine to generate B-spline basis functions for open knot vectors
-c    = order of the B-spline basis function
-d    = first term of the basis function recursion relation
-e    = second term of the basis function recursion relation
-Npts   = number of defining polygon vertices
-n[]    = array containing the basis functions
-n[1] contains the basis function associated with B1 etc.
-NplusC   = constant -- Npts + c -- maximum number of knot values
-t    = parameter value
-Temp[]   = Temporary array
-x[]    = knot vector
+/**
+* Subroutine to generate B-spline basis functions for knot vectors. Uses Cox-de Boor recursive relation.
+*
+* @param[in] c order of the B-spline basis function
+* @param[in] t parameter in the Cox-de Boor formula
+* @param[in] Npts number of defining polygon vertices
+* @param[in] x knot vector
+* @param[out] n array containing the basis functions
+*
+* @note d is the first part of the basis function recursive relation
+* @note e is the second part of the basis function recursive relation
+* @note NplusC the maximum number of knot values 'Npts' + 'c'
 */
 static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
 {
@@ -370,23 +415,23 @@ static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
   free(Temp);
 }
 
-/*  
+/**
 * Subroutine to generate a B-spline curve using an uniform open knot vector
-b[]    = array containing the defining polygon vertices
-b[1] contains the x-component of the vertex
-b[2] contains the y-component of the vertex
-b[3] contains the z-component of the vertex
-k       = order of the \bsp basis function
-NBasis    = array containing the basis functions for a single value of t
-NplusC    = number of knot values
-Npts    = number of defining polygon vertices
-p[,]    = array containing the curve points
-p[1] contains the x-component of the point
-p[2] contains the y-component of the point
-p[3] contains the z-component of the point
-p1      = number of points to be calculated on the curve
-t       = parameter value 0 <= t <= 1
-x[]     = array containing the knot vector
+*
+* @param[in] Npts number of defining polygon vertices
+* @param[in] k order of the B-spline basis function
+* @param[in] p1 number of points to be calculated on the curve
+* @param[in] b array containing the defining polygon vertices
+* @param[out] p array containing the curve points
+*
+* @note b[1], b[3]... contain the x-component of the vertex
+* @note b[2], b[4]... contain the y-component of the vertex
+* @note NBasis is the array containing the basis functions for a single value of t
+* @note NplusC is the number of knot values
+* @note p[1], p[3]... contain the x-component of the point
+* @note p[2], p[4]... contain the y-component of the point
+* @note t is the parameter value used in Cox-de Boor formula
+* @note x is the array containing the knot vector
 */
 static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p)
 {
@@ -397,10 +442,8 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
   double t;
   double *NBasis = (double *)malloc(IV_CURVE_NUM_COMPONENTS * Npts * sizeof(double));
   double Temp;
-  double *x;
-  
   NplusC = Npts + k;
-  x = (double *)malloc(IV_CURVE_NUM_COMPONENTS * NplusC * sizeof(double));
+  double *x = (double *)malloc(IV_CURVE_NUM_COMPONENTS * NplusC * sizeof(double));
 
   for (i = 1; i <= Npts; i++)
   {
@@ -420,9 +463,9 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
   Step = ((float)((Npts)-(k - 1))) / ((float)(p1 - 1));
 
   for (i1 = 1; i1 <= p1; i1++){
-      if ((float)(Npts)-t < 5e-6){
-          t = (float)((Npts));
-      }
+	  if ((float)(Npts)-t < 5e-6){
+		  t = (float)((Npts));
+	  }
     Basis(k, t, Npts, x, NBasis);
     for (j = 1; j <= 2; j++)
     {
@@ -447,6 +490,12 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 /*    Public functions     */
 /*********************************/
 
+/**
+ * Sets noise for voltages and currents
+ * 
+ * @param NewMinV new voltage noise
+ * @param NewMinC new current noise
+ */
 void SetMinVC(double NewMinV, double NewMinC)
 {
   if (NewMinV > 0 && NewMinC > 0)
@@ -461,60 +510,65 @@ void SetMinVC(double NewMinV, double NewMinC)
   }
 }
 
-double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
-                  double *VoltagesB, double *CurrentsB, uint32_t  CurveLengthB)
+/**
+ * Compares two curves
+ * 
+ * @param[in] VoltagesA voltages of the first curve
+ * @param[in] CurrentsA currents of the first curve
+ * @param[in] VoltagesB voltages of the second curve
+ * @param[in] CurrentsB currents of the second curve
+ * @param[in] CurveLength number of points in the curves
+ * 
+ * @return score of difference between the curves; 1.0 for completely different curves, 0.0 for same curves
+ */
+double CompareIVC(double *VoltagesA, double *CurrentsA, 
+      double *VoltagesB, double *CurrentsB, 
+      uint32_t  CurveLength)
 {
   uint32_t i;
-
-  const uint32_t CurveLength = max(CurveLengthA, CurveLengthB);
-  double VarV, VarC;
-  double Score;
-  double _c, _v, x;
-  double *InCurve, *OutCurve;
-  uint32_t SizeA, SizeB;
-  
   double **a_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
   double **b_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
   for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
   {
-      a_[i] = (double*)malloc(CurveLength * sizeof(double));
-      b_[i] = (double*)malloc(CurveLength * sizeof(double));
+    a_[i] = (double*)malloc(CurveLength * sizeof(double));
+    b_[i] = (double*)malloc(CurveLength * sizeof(double));
   }
   
   if (!VoltagesA | !CurrentsA)
   {
-    CleanUp(a_, b_, NULL, NULL);
+	CleanUp(a_, b_, NULL, NULL);
     return -1;
   }
-  for (i = 0; i < CurveLengthA; i++)
+  for (i = 0; i < CurveLength; i++)
   {
     a_[0][i] = VoltagesA[i];
     a_[1][i] = CurrentsA[i];
   }
   if (VoltagesB)
   {
-    for (i = 0; i < CurveLengthB; i++)
+    for (i = 0; i < CurveLength; i++)
     {
       b_[0][i] = VoltagesB[i];
       b_[1][i] = CurrentsB[i];
     }
   }
-  _v = max(sqrt(Disp(a_[0], CurveLengthA)), sqrt(Disp(b_[0], CurveLengthB)));
-  _c = max(sqrt(Disp(a_[1], CurveLengthA)), sqrt(Disp(b_[1], CurveLengthB)));
+  double VarV, VarC;
+  double Score;
+  double _v = max(sqrt(Disp(a_[0], CurveLength)), sqrt(Disp(b_[0], CurveLength)));
+  double _c = max(sqrt(Disp(a_[1], CurveLength)), sqrt(Disp(b_[1], CurveLength)));
   VarV = max(_v, MinVarV);
   VarC = max(_c, MinVarC);
-  SubtractVar(a_[0], Mean(a_[0], CurveLengthA), a_[0], CurveLengthA);
-  SubtractVar(a_[1], Mean(a_[1], CurveLengthA), a_[1], CurveLengthA);
-  for (i = 0; i < CurveLengthA; i++)
+  SubtractVar(a_[0], Mean(a_[0], CurveLength), a_[0], CurveLength);
+  SubtractVar(a_[1], Mean(a_[1], CurveLength), a_[1], CurveLength);
+  for (i = 0; i < CurveLength; i++)
   { 
     a_[0][i] = a_[0][i] / VarV;
     a_[1][i] = a_[1][i] / VarC;
 
   }
-
-  InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
-  OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
-  SizeA = RemoveRepeatsIvc(a_, CurveLengthA);
+  double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
+  double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
+  uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLength);
   if (SizeA < 2)
   {
     Score = SCORE_ERROR;
@@ -526,12 +580,13 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
   {
     InCurve[i * IV_CURVE_NUM_COMPONENTS + 1] = a_[0][i];
     InCurve[i * IV_CURVE_NUM_COMPONENTS + 2] = a_[1][i];
+
   }
   for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
   {
     OutCurve[i] = 0.;
   }
-  Bspline(SizeA, 3, CurveLength, InCurve, OutCurve);
+  Bspline(SizeA, 3, CurveLength, InCurve, OutCurve); 
   for (i = 0; i < CurveLength; i++)
   {
     a_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
@@ -539,19 +594,19 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
   }
   if (!VoltagesB)
   {
-      x = Mean(a_[1], CurveLengthB);
+	  double x = Mean(a_[1], CurveLength);
     Score = RescaleScore(x * x);
   }
   else
   {
-    SubtractVar(b_[0], Mean(b_[0], CurveLengthB), b_[0], CurveLengthB);
-    SubtractVar(b_[1], Mean(b_[1], CurveLengthB), b_[1], CurveLengthB);
-    for (i = 0; i < CurveLengthB; i++)
+    SubtractVar(b_[0], Mean(b_[0], CurveLength), b_[0], CurveLength);
+    SubtractVar(b_[1], Mean(b_[1], CurveLength), b_[1], CurveLength);
+    for (i = 0; i < CurveLength; i++)
     {
       b_[0][i] = b_[0][i] / VarV;
       b_[1][i] = b_[1][i] / VarC;
     }
-    SizeB = RemoveRepeatsIvc(b_, CurveLengthB);
+    uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLength);
     if (SizeB < 2)
     {
       Score = SCORE_ERROR;
@@ -565,18 +620,18 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t  CurveLengthA,
       InCurve[i * IV_CURVE_NUM_COMPONENTS + 2] = b_[1][i];
     }
 
-    for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
+	for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
     {
       OutCurve[i] = 0.;
     }
 
     Bspline(SizeB, 3, CurveLength, InCurve, OutCurve);
-    for (i = 0; i < CurveLength; i++)
+	for (i = 0; i < CurveLength; i++)
     {
       b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
       b_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
     }
-    Score = RescaleScore((DistCurvePts(a_, b_, CurveLength) + DistCurvePts(b_, a_, CurveLength)) / 2.);
+	Score = RescaleScore((DistCurvePts(a_, b_, CurveLength) + DistCurvePts(b_, a_, CurveLength)) / 2.);
   }
   CleanUp(a_, b_, InCurve, OutCurve);
   return Score;
