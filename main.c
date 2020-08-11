@@ -111,14 +111,14 @@ int main(void)
   printf("Score 1 = %.2f, Score 2 = %.2f (should be the same).\n", (float)ResultScore1, (float)ResultScore2);
   if (fabs(ResultScore2 - ResultScore1) > 0.1)
   {
-      printf("Test failed!!!\n");
-      return -1;
+    printf("Test failed!!!\n");
+    return -1;
   }
 
   if (ResultScore1 < 0)
   {
-      printf("Test failed!!!\n");
-      return -1;
+    printf("Test failed!!!\n");
+    return -1;
   }
 
   printf("All tests successfully passed.\n");

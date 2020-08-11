@@ -308,7 +308,7 @@ static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
 
 static double Abs(double x)
 {
-	return x > 0 ? x : -x;;
+  return x > 0 ? x : -x;
 }
 
 /**
@@ -352,8 +352,9 @@ static void Knot(uint32_t n, int c, double *x)
   NplusC = n + c;
 
   x[1] = 0;
-  for (i = 2; i <= NplusC; i++){
-	  x[i] = i - 1;
+  for (i = 2; i <= NplusC; i++)
+  {
+    x[i] = i - 1;
   }
 }
 
@@ -460,12 +461,14 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
   Icount = 0;
 
   t = k - 1; /* special parameter range for periodic basis functions */
-  Step = ((float)((Npts)-(k - 1))) / ((float)(p1 - 1));
+  Step = ((float)(Npts - (k - 1))) / ((float)(p1 - 1));
 
-  for (i1 = 1; i1 <= p1; i1++){
-	  if ((float)(Npts)-t < 5e-6){
-		  t = (float)((Npts));
-	  }
+  for (i1 = 1; i1 <= p1; i1++)
+  {
+    if ((float)(Npts) - t < 5e-6)
+    {
+      t = (float)((Npts));
+    }
     Basis(k, t, Npts, x, NBasis);
     for (j = 1; j <= 2; j++)
     {
@@ -538,7 +541,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   
   if (!VoltagesA | !CurrentsA)
   {
-	CleanUp(a_, b_, NULL, NULL);
+    CleanUp(a_, b_, NULL, NULL);
     return -1;
   }
   for (i = 0; i < CurveLengthA; i++)
@@ -596,7 +599,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   }
   if (!VoltagesB)
   {
-	  double x = Mean(a_[1], CurveLengthB);
+    double x = Mean(a_[1], CurveLengthB);
     Score = RescaleScore(x * x);
   }
   else
@@ -622,18 +625,18 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
       InCurve[i * IV_CURVE_NUM_COMPONENTS + 2] = b_[1][i];
     }
 
-	for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
+    for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
     {
       OutCurve[i] = 0.;
     }
 
     Bspline(SizeB, 3, CurveLength, InCurve, OutCurve);
-	for (i = 0; i < CurveLength; i++)
+    for (i = 0; i < CurveLength; i++)
     {
       b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
       b_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
     }
-	Score = RescaleScore((DistCurvePts(a_, b_, CurveLength) + DistCurvePts(b_, a_, CurveLength)) / 2.);
+    Score = RescaleScore((DistCurvePts(a_, b_, CurveLength) + DistCurvePts(b_, a_, CurveLength)) / 2.);
   }
   CleanUp(a_, b_, InCurve, OutCurve);
   return Score;
