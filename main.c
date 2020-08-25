@@ -20,7 +20,7 @@ typedef struct
 int main(void)
 {
   double ResultScore, ResultScore1, ResultScore2;
-  int i;
+  uint32_t i;
   
   iv_curve_t IVCOpenCircuit, IVCShortCircuit, IVCResistor1, IVCResistor2, IVCCapacitor;
 
