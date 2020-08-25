@@ -1,5 +1,5 @@
 /* This module compares two iv-curves and returnes Score from 0.0 to 1.0
-*/
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,26 +14,26 @@
 #define min(a, b) (((a<b))?(a):(b))
 #define max(a, b) (((a>b))?(a):(b))
 #endif
-//#define min(a, b) (((a<b))?(a):(b))
-//#define max(a, b) (((a>b))?(a):(b))
 #define IV_CURVE_NUM_COMPONENTS 2
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
 static double MinVarV, MinVarC;
 #define SCORE_ERROR -1    /**< Algorithm return Error */
+#define ORDER 3     /**< Order of B-spline */
+#define MIN_LEN_CURVE 2
 
 /*********************************/
-/*  Internal functions     */
+/*       Internal functions      */
 /*********************************/
 
 /**
-* Returns the difference vector of two vectors
-* 
-* @param[in] a first vector
-* @param[in] b vector to subtract
-* @param[out] v resulting vector
-* @param[in] SizeArr vector length
-*/
+ * Returns the difference vector of two vectors
+ * 
+ * @param[in] a first vector
+ * @param[in] b vector to subtract
+ * @param[out] v resulting vector
+ * @param[in] SizeArr vector length
+ */
 static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
 {
   uint32_t i;
@@ -44,13 +44,13 @@ static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
 }
 
 /**
-* Returns the difference vector of vector and variable
-* 
-* @param[in] a first vector
-* @param[in] b variable
-* @param[out] v resulting vector
-* @param[in] SizeArr vector length
-*/
+ * Returns the difference vector of vector and variable
+ * 
+ * @param[in] a first vector
+ * @param[in] b variable
+ * @param[out] v resulting vector
+ * @param[in] SizeArr vector length
+ */
 static void SubtractVar(double *a, double b, double *v, uint32_t SizeArr)
 {
   uint32_t i;
@@ -61,13 +61,13 @@ static void SubtractVar(double *a, double b, double *v, uint32_t SizeArr)
 }
 
 /**
-* Returns the vector mean
-*
-* @param[in] mas vector
-* @param[in] SizeArr vector length
-*
-* @return mean of 'mas'
-*/
+ * Returns the vector mean
+ *
+ * @param[in] mas vector
+ * @param[in] SizeArr vector length
+ *
+ * @return mean of 'mas'
+ */
 static double Mean(double *mas, uint32_t SizeArr)
 {
   double avg = 0;
@@ -80,14 +80,14 @@ static double Mean(double *mas, uint32_t SizeArr)
 }
 
 /**
-* Returns the scalar product of two vectors
-*
-* @param[in] a first vector
-* @param[in] b second vector
-* @param[in] SizeArr vector length
-*
-* @return scalar product of 'a' and 'b'
-*/
+ * Returns the scalar product of two vectors
+ *
+ * @param[in] a first vector
+ * @param[in] b second vector
+ * @param[in] SizeArr vector length
+ *
+ * @return scalar product of 'a' and 'b'
+ */
 static double Dot(double *a, double *b, uint32_t SizeArr)
 {
   double s;
@@ -102,30 +102,30 @@ static double Dot(double *a, double *b, uint32_t SizeArr)
 }
 
 /**
-* Returns the vector product of two vectors
-*
-* @param[in] a first vector
-* @param[in] b second vector
-* @param[in] SizeArr vector length
-*
-* @return vector product of 'a' and 'b'
-*/
+ * Returns the vector product of two vectors
+ *
+ * @param[in] a first vector
+ * @param[in] b second vector
+ * @param[in] SizeArr vector length
+ *
+ * @return vector product of 'a' and 'b'
+ */
 static double Cross(double *a, double *b)
 {
   return a[0] * b[1] - a[1] * b[0];
 }
 
 /*
-* Clean two double matrixes and two or less dynamic massives
-*
-* @param[in] Matrix1 first double matrix
-* @param[in] Matrix2 second double matrix
-* @param[in] Massive1 first double array
-* @param[in] Massive2 second double array
-*/
+ * Clean two double matrixes and two or less dynamic massives
+ *
+ * @param[in] Matrix1 first double matrix
+ * @param[in] Matrix2 second double matrix
+ * @param[in] Massive1 first double array
+ * @param[in] Massive2 second double array
+ */
 static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double *Massive2)
 {
-  int i;
+  uint32_t i;
   for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
   {
     free(Matrix1[i]);
@@ -144,36 +144,38 @@ static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double
 }
 
 /**
-* Returns the dispersion of the vector
-*
-* @param[im] mas vector
-* @param[in] SizeArr vector length
-*
-* @return ('mas' - mean of the 'mas') ^ 2
-*/
+ * Returns the dispersion of the vector
+ *
+ * @param[im] mas vector
+ * @param[in] SizeArr vector length
+ *
+ * @return ('mas' - mean of the 'mas') ^ 2
+ */
 static double Disp(double *mas, uint32_t SizeArr)
 {
   double avg = 0;
   uint32_t i;
   double *Disp = (double *)malloc(SizeArr * sizeof(double));
   avg = Mean(mas, SizeArr);
+
   for (i = 0; i < SizeArr; i++)
   {
     Disp[i] = (mas[i] - avg) * (mas[i] - avg);
   }
+
   avg = Mean(Disp, SizeArr);
   free(Disp);
   return avg;
 }
 
 /**
-* Returns the transposed matrix
-*
-* @param[in] m matrix
-* @param[out] m_t transposed matrix
-* @param[in] Size_I number of lines in 'm'
-* @param[in] SIze_J number of columns in 'm'
-*/
+ * Returns the transposed matrix
+ *
+ * @param[in] m matrix
+ * @param[out] m_t transposed matrix
+ * @param[in] Size_I number of lines in 'm'
+ * @param[in] SIze_J number of columns in 'm'
+ */
 static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
 {
   uint32_t i;
@@ -188,15 +190,15 @@ static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
 }
 
 /**
-* Returns the distance between a point and a segment
-*
-* @param[in] p point
-* @param[in] a first end of a segment
-* @param[in] b second end of a segment
-* @param[in] SizeArr dimension
-*
-* @return distance
-*/
+ * Returns the distance between a point and a segment
+ *
+ * @param[in] p point
+ * @param[in] a first end of a segment
+ * @param[in] b second end of a segment
+ * @param[in] SizeArr dimension
+ *
+ * @return distance
+ */
 static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
 {
   double *v1 = (double *)malloc(SizeArr * sizeof(double));
@@ -218,30 +220,31 @@ static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
   else Result = pow(Cross(v1, v2), 2) / SegLen2;
   free(v1); 
   free(v2);
+
   return Result;
 }
 
 /**
-* Updates Score value
-*
-* @param[in] x average sum of distances between two curves
-*
-* @return score 
-*/
+ * Updates Score value
+ *
+ * @param[in] x average sum of distances between two curves
+ *
+ * @return score 
+ */
 static double RescaleScore(double x)
 {
   return 1 - exp(-8 * x);
 }
 
 /**
-* Returns all distances of two iv_curves
-*
-* @param[in] Curve first curve
-* @param[in] pts second curve
-* @param[in] SizeJ number of points in the curves
-*
-* @return normalized sum of distances
-*/
+ * Returns all distances of two iv_curves
+ *
+ * @param[in] Curve first curve
+ * @param[in] pts second curve
+ * @param[in] SizeJ number of points in the curves
+ *
+ * @return normalized sum of distances
+ */
 static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
 {
   double res = 0.0;
@@ -277,6 +280,7 @@ static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
         LocMin = v[i];
       }
     }
+
     Transpose(Curve, CurveT, IV_CURVE_NUM_COMPONENTS, SizeJ);
     CurNode = CurveT[LocMinItem];
     
@@ -312,14 +316,14 @@ static double Abs(double x)
 }
 
 /**
-* Removes repeated data in curve
-*
-* @param a curve
-* @param[in] SizeJ number of points in the curve
-*
-* @return number of points in the cleaned curve
-*/
-static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
+ * Removes repeated data in curve
+ *
+ * @param a curve
+ * @param[in] SizeJ number of points in the curve
+ *
+ * @return number of points in the cleaned curve
+ */
+static uint32_t RemoveRepeatsIvc(double **a, uint32_t SizeJ)
 {
   uint32_t i;
   uint32_t n;
@@ -334,24 +338,25 @@ static int RemoveRepeatsIvc(double **a, uint32_t SizeJ)
   }
   a[0][n] = a[0][SizeJ - 1];
   a[1][n++] = a[1][SizeJ - 1];
+
   return n;
 }
 
 /**
-* Subroutine to generate a B-spline knot vector
+ * Subroutine to generate a B-spline knot vector
  * 
  * @param[in] n number of defining polygon vertices
  * @param[in] c order of the basis function
  * @param[out] x knot vector
  * 
  * @note NplusC is the maximum value of the knot vector 'x'
-*/
-static void Knot(uint32_t n, int c, double *x)
+ */
+static void Knot(uint32_t n, uint32_t c, double *x)
 {
-  int NplusC, i;
+  uint32_t NplusC, i;
   NplusC = n + c;
-
   x[1] = 0;
+
   for (i = 2; i <= NplusC; i++)
   {
     x[i] = i - 1;
@@ -359,18 +364,18 @@ static void Knot(uint32_t n, int c, double *x)
 }
 
 /**
-* Subroutine to generate B-spline basis functions for knot vectors. Uses Cox-de Boor recursive relation.
-*
-* @param[in] c order of the B-spline basis function
-* @param[in] t parameter in the Cox-de Boor formula
-* @param[in] Npts number of defining polygon vertices
-* @param[in] x knot vector
-* @param[out] n array containing the basis functions
-*
-* @note d is the first part of the basis function recursive relation
-* @note e is the second part of the basis function recursive relation
-* @note NplusC the maximum number of knot values 'Npts' + 'c'
-*/
+ * Subroutine to generate B-spline basis functions for knot vectors. Uses Cox-de Boor recursive relation.
+ *
+ * @param[in] c order of the B-spline basis function
+ * @param[in] t parameter in the Cox-de Boor formula
+ * @param[in] Npts number of defining polygon vertices
+ * @param[in] x knot vector
+ * @param[out] n array containing the basis functions
+ *
+ * @note d is the first part of the basis function recursive relation
+ * @note e is the second part of the basis function recursive relation
+ * @note NplusC the maximum number of knot values 'Npts' + 'c'
+ */
 static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
 {
   uint32_t NplusC;
@@ -378,6 +383,7 @@ static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
   double d, e;
   double *Temp = (double *)malloc(4 * Npts * sizeof(double));
   NplusC = Npts + c;
+
   for (i = 1; i <= NplusC - 1; i++)
   {
     if ((t >= x[i]) && (t < x[i + 1]))
@@ -401,9 +407,11 @@ static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
         e = ((x[i + k] - t) * Temp[i + 1]) / (x[i + k] - x[i + 1]);
       }
       else e = 0;
+
       Temp[i] = d + e;
     }
   }
+
   if (t == x[NplusC])
   {
     Temp[Npts] = 1;
@@ -417,23 +425,23 @@ static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
 }
 
 /**
-* Subroutine to generate a B-spline curve using an uniform open knot vector
-*
-* @param[in] Npts number of defining polygon vertices
-* @param[in] k order of the B-spline basis function
-* @param[in] p1 number of points to be calculated on the curve
-* @param[in] b array containing the defining polygon vertices
-* @param[out] p array containing the curve points
-*
-* @note b[1], b[3]... contain the x-component of the vertex
-* @note b[2], b[4]... contain the y-component of the vertex
-* @note NBasis is the array containing the basis functions for a single value of t
-* @note NplusC is the number of knot values
-* @note p[1], p[3]... contain the x-component of the point
-* @note p[2], p[4]... contain the y-component of the point
-* @note t is the parameter value used in Cox-de Boor formula
-* @note x is the array containing the knot vector
-*/
+ * Subroutine to generate a B-spline curve using an uniform open knot vector
+ *
+ * @param[in] Npts number of defining polygon vertices
+ * @param[in] k order of the B-spline basis function
+ * @param[in] p1 number of points to be calculated on the curve
+ * @param[in] b array containing the defining polygon vertices
+ * @param[out] p array containing the curve points
+ *
+ * @note b[1], b[3]... contain the x-component of the vertex
+ * @note b[2], b[4]... contain the y-component of the vertex
+ * @note NBasis is the array containing the basis functions for a single value of t
+ * @note NplusC is the number of knot values
+ * @note p[1], p[3]... contain the x-component of the point
+ * @note p[2], p[4]... contain the y-component of the point
+ * @note t is the parameter value used in Cox-de Boor formula
+ * @note x is the array containing the knot vector
+ */
 static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p)
 {
   uint32_t i, j, Icount, Jcount;
@@ -529,6 +537,8 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
       uint32_t  CurveLengthB)
 {
   uint32_t i;
+  double VarV, VarC;
+  double Score;
   double **a_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
   double **b_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
 
@@ -544,11 +554,13 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     CleanUp(a_, b_, NULL, NULL);
     return -1;
   }
+
   for (i = 0; i < CurveLengthA; i++)
   {
     a_[0][i] = VoltagesA[i];
     a_[1][i] = CurrentsA[i];
   }
+
   if (VoltagesB)
   {
     for (i = 0; i < CurveLengthB; i++)
@@ -557,46 +569,49 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
       b_[1][i] = CurrentsB[i];
     }
   }
-  double VarV, VarC;
-  double Score;
+
   double _v = max(sqrt(Disp(a_[0], CurveLengthA)), sqrt(Disp(b_[0], CurveLengthB)));
   double _c = max(sqrt(Disp(a_[1], CurveLengthA)), sqrt(Disp(b_[1], CurveLengthB)));
   VarV = max(_v, MinVarV);
   VarC = max(_c, MinVarC);
   SubtractVar(a_[0], Mean(a_[0], CurveLengthA), a_[0], CurveLengthA);
   SubtractVar(a_[1], Mean(a_[1], CurveLengthA), a_[1], CurveLengthA);
+
   for (i = 0; i < CurveLengthA; i++)
   { 
     a_[0][i] = a_[0][i] / VarV;
     a_[1][i] = a_[1][i] / VarC;
-
   }
   double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLengthA);
-  if (SizeA < 2)
+
+  if (SizeA < MIN_LEN_CURVE)
   {
     Score = SCORE_ERROR;
     printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
     CleanUp(a_, b_, InCurve, OutCurve);
     return Score;
   }
+
   for (i = 0; i < SizeA; i++)
   {
     InCurve[i * IV_CURVE_NUM_COMPONENTS + 1] = a_[0][i];
     InCurve[i * IV_CURVE_NUM_COMPONENTS + 2] = a_[1][i];
-
   }
   for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
   {
     OutCurve[i] = 0.;
   }
-  Bspline(SizeA, 3, CurveLength, InCurve, OutCurve); 
+
+  Bspline(SizeA, ORDER, CurveLength, InCurve, OutCurve);
+
   for (i = 0; i < CurveLength; i++)
   {
     a_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
     a_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
   }
+
   if (!VoltagesB)
   {
     double x = Mean(a_[1], CurveLengthB);
@@ -606,19 +621,23 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   {
     SubtractVar(b_[0], Mean(b_[0], CurveLengthB), b_[0], CurveLengthB);
     SubtractVar(b_[1], Mean(b_[1], CurveLengthB), b_[1], CurveLengthB);
+
     for (i = 0; i < CurveLengthB; i++)
     {
       b_[0][i] = b_[0][i] / VarV;
       b_[1][i] = b_[1][i] / VarC;
     }
+
     uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLengthB);
-    if (SizeB < 2)
+
+    if (SizeB < MIN_LEN_CURVE)
     {
       Score = SCORE_ERROR;
       printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
       CleanUp(a_, b_, InCurve, OutCurve);
       return Score;
     }
+
     for (i = 0; i < SizeB; i++)
     {
       InCurve[i * IV_CURVE_NUM_COMPONENTS + 1] = b_[0][i];
@@ -630,7 +649,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
       OutCurve[i] = 0.;
     }
 
-    Bspline(SizeB, 3, CurveLength, InCurve, OutCurve);
+    Bspline(SizeB, ORDER, CurveLength, InCurve, OutCurve);
     for (i = 0; i < CurveLength; i++)
     {
       b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
