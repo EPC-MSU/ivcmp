@@ -8,12 +8,16 @@
 #include "ivcmp.h"
 
 /*********************************/
-/*    Definitions      */
+/*    Settings                   */
 /*********************************/
-#if defined(linux)
-#define min(a, b) (((a<b))?(a):(b))
-#define max(a, b) (((a>b))?(a):(b))
-#endif
+/* Uncomment this to save temporary results 
+ * to files on intermediate steps
+ */
+//#define DebugOutFile_OUTPUT
+
+/*********************************/
+/*    Definitions                */
+/*********************************/
 #define IV_CURVE_NUM_COMPONENTS 2
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
@@ -21,6 +25,18 @@ static double MinVarV, MinVarC;
 #define SCORE_ERROR -1    /**< Algorithm return Error */
 #define ORDER 3     /**< Order of B-spline */
 #define MIN_LEN_CURVE 2
+
+#if defined(linux)
+#define min(a, b) (((a<b))?(a):(b))
+#define max(a, b) (((a>b))?(a):(b))
+#endif
+
+#if defined(linux)
+#define OPEN_FILE(FilePtr, FileName, Mode) file_ptr = fopen(FileName, Mode)
+#else
+#define OPEN_FILE(FilePtr, FileName, Mode) fopen_s(&FilePtr, FileName, Mode)
+#endif
+
 
 /*********************************/
 /*       Internal functions      */
@@ -539,6 +555,26 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   uint32_t i;
   double VarV, VarC;
   double Score;
+#ifdef DebugOutFile_OUTPUT
+  FILE *DebugOutFile;
+#endif
+
+#ifdef DebugOutFile_OUTPUT
+  OPEN_FILE(DebugOutFile, "input_curve_a.txt", "w");
+  for (i = 0; i < CurveLengthA; i++)
+  {
+      fprintf(DebugOutFile, "%lf\t%lf\n", VoltagesA[i], CurrentsA[i]);
+  }
+  fclose(DebugOutFile);
+
+  OPEN_FILE(DebugOutFile, "input_curve_b.txt", "w");
+  for (i = 0; i < CurveLengthB; i++)
+  {
+      fprintf(DebugOutFile, "%lf\t%lf\n", VoltagesB[i], CurrentsB[i]);
+  }
+  fclose(DebugOutFile);
+#endif
+
   double **a_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
   double **b_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
 
@@ -548,6 +584,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     a_[i] = (double*)malloc(CurveLength * sizeof(double));
     b_[i] = (double*)malloc(CurveLength * sizeof(double));
   }
+
   
   if (!VoltagesA | !CurrentsA)
   {
@@ -570,10 +607,34 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     }
   }
 
+#ifdef DebugOutFile_OUTPUT
+  OPEN_FILE(DebugOutFile, "copied_curve_a.txt", "w");
+  for (i = 0; i < CurveLengthA; i++)
+  {
+      fprintf(DebugOutFile, "%lf\t%lf\n", a_[0][i], a_[1][i]);
+  }
+  fclose(DebugOutFile);
+
+  OPEN_FILE(DebugOutFile, "copied_curve_b.txt", "w");
+  for (i = 0; i < CurveLengthB; i++)
+  {
+      fprintf(DebugOutFile, "%lf\t%lf\n", b_[0][i], b_[1][i]);
+  }
+  fclose(DebugOutFile);
+#endif
+
   double _v = max(sqrt(Disp(a_[0], CurveLengthA)), sqrt(Disp(b_[0], CurveLengthB)));
   double _c = max(sqrt(Disp(a_[1], CurveLengthA)), sqrt(Disp(b_[1], CurveLengthB)));
   VarV = max(_v, MinVarV);
   VarC = max(_c, MinVarC);
+
+#ifdef DebugOutFile_OUTPUT
+  OPEN_FILE(DebugOutFile, "variations.txt", "w");
+  fprintf(DebugOutFile, "VarV = %lf\n", VarV);
+  fprintf(DebugOutFile, "VarC = %lf\n", VarC);
+  fclose(DebugOutFile);
+#endif
+
   SubtractVar(a_[0], Mean(a_[0], CurveLengthA), a_[0], CurveLengthA);
   SubtractVar(a_[1], Mean(a_[1], CurveLengthA), a_[1], CurveLengthA);
 
@@ -582,9 +643,28 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     a_[0][i] = a_[0][i] / VarV;
     a_[1][i] = a_[1][i] / VarC;
   }
+
+#ifdef DebugOutFile_OUTPUT
+  OPEN_FILE(DebugOutFile, "scaled_a.txt", "w");
+  for (i = 0; i < CurveLengthA; i++)
+  {
+      fprintf(DebugOutFile, "%lf\t%lf\n", a_[0][i], a_[1][i]);
+  }
+  fclose(DebugOutFile);
+#endif
+
   double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLengthA);
+
+#ifdef DebugOutFile_OUTPUT
+  OPEN_FILE(DebugOutFile, "repeats_removed_a.txt", "w");
+  for (i = 0; i < SizeA; i++)
+  {
+      fprintf(DebugOutFile, "%lf\t%lf\n", a_[0][i], a_[1][i]);
+  }
+  fclose(DebugOutFile);
+#endif
 
   if (SizeA < MIN_LEN_CURVE)
   {
@@ -612,6 +692,15 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     a_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
   }
 
+#ifdef DebugOutFile_OUTPUT
+  OPEN_FILE(DebugOutFile, "splined_a.txt", "w");
+  for (i = 0; i < CurveLength; i++)
+  {
+      fprintf(DebugOutFile, "%lf\t%lf\n", a_[0][i], a_[1][i]);
+  }
+  fclose(DebugOutFile);
+#endif
+
   if (!VoltagesB)
   {
     double x = Mean(a_[1], CurveLengthB);
@@ -628,7 +717,25 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
       b_[1][i] = b_[1][i] / VarC;
     }
 
+#ifdef DebugOutFile_OUTPUT
+    OPEN_FILE(DebugOutFile, "scaled_b.txt", "w");
+    for (i = 0; i < CurveLengthB; i++)
+    {
+        fprintf(DebugOutFile, "%lf\t%lf\n", b_[0][i], b_[1][i]);
+    }
+    fclose(DebugOutFile);
+#endif
+
     uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLengthB);
+
+#ifdef DebugOutFile_OUTPUT
+    OPEN_FILE(DebugOutFile, "repeats_removed_b.txt", "w");
+    for (i = 0; i < SizeB; i++)
+    {
+        fprintf(DebugOutFile, "%lf\t%lf\n", b_[0][i], b_[1][i]);
+    }
+    fclose(DebugOutFile);
+#endif
 
     if (SizeB < MIN_LEN_CURVE)
     {
@@ -655,7 +762,30 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
       b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
       b_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
     }
-    Score = RescaleScore((DistCurvePts(a_, b_, CurveLength) + DistCurvePts(b_, a_, CurveLength)) / 2.);
+
+#ifdef DebugOutFile_OUTPUT
+    OPEN_FILE(DebugOutFile, "splined_b.txt", "w");
+    for (i = 0; i < CurveLength; i++)
+    {
+        fprintf(DebugOutFile, "%lf\t%lf\n", b_[0][i], b_[1][i]);
+    }
+    fclose(DebugOutFile);
+#endif
+
+    double DistAB = DistCurvePts(a_, b_, CurveLength);
+    double DistBA = DistCurvePts(b_, a_, CurveLength);
+    Score = RescaleScore((DistAB + DistBA) / 2.);
+
+#ifdef DebugOutFile_OUTPUT
+    OPEN_FILE(DebugOutFile, "dist_and_scores.txt", "w");
+    for (i = 0; i < SizeA; i++)
+    {
+        fprintf(DebugOutFile, "dist_a_b = %lf\n", DistAB);
+        fprintf(DebugOutFile, "dist_b_a = %lf\n", DistBA);
+        fprintf(DebugOutFile, "score = %lf\n", Score);
+    }
+    fclose(DebugOutFile);
+#endif
   }
   CleanUp(a_, b_, InCurve, OutCurve);
   return Score;

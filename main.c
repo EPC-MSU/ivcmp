@@ -3,7 +3,7 @@
 #include "math.h"
 #include "ivcmp.h"
 
-#define MAX_NUM_POINTS 10
+#define MAX_NUM_POINTS 20
 
 #define VOLTAGE_AMPL 12.
 #define R_CS 475.
@@ -102,12 +102,20 @@ int main(void)
 
   printf("--- Test 5. Compare curves with different length.\n");
 
+  iv_curve_t IVCResistor3;
+  const uint32_t num_points_for_r_3 = MAX_NUM_POINTS / 2;
+  for (i = 0; i < num_points_for_r_3; i++)
+  {
+      IVCResistor3.Voltages[i] = 0.3 * VOLTAGE_AMPL * sin(2 * M_PI * i / num_points_for_r_3);
+      IVCResistor3.Currents[i] = 0.7 * CURRENT_AMPL * sin(2 * M_PI * i / num_points_for_r_3);
+  }
+
   ResultScore1 = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
-                           IVCResistor2.Voltages, IVCResistor2.Currents, 20);
+                            IVCResistor3.Voltages, IVCResistor3.Currents, num_points_for_r_3);
 
   /* Same test but curves are swapped */
-  ResultScore2 = CompareIVC(IVCResistor2.Voltages, IVCResistor2.Currents, 20,
-                           IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS);
+  ResultScore2 = CompareIVC(IVCResistor3.Voltages, IVCResistor3.Currents, num_points_for_r_3,
+                            IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS);
   printf("Score 1 = %.2f, Score 2 = %.2f (should be the same).\n", (float)ResultScore1, (float)ResultScore2);
   if (fabs(ResultScore2 - ResultScore1) > 0.1)
   {
