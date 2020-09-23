@@ -10,7 +10,7 @@ To obtain plots:
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+
 
 def read_curve_from_file(file_name):
     voltages = []
@@ -24,6 +24,7 @@ def read_curve_from_file(file_name):
         currents.append(float(i_str))
 
     return voltages, currents
+
 
 def plot_two_curves(plot_name, plot_title, plotfile_prefix=""):
     a_v, a_i = read_curve_from_file(plot_name + "_a.txt")
@@ -49,18 +50,18 @@ def plot_two_curves(plot_name, plot_title, plotfile_prefix=""):
     plt.legend()
     plt.xlabel("Voltage")
     plt.ylabel("Current")
-    
+
     plotfile_name = plot_name + ".png"
     if plotfile_prefix != "":
         plotfile_name = plotfile_prefix + "_" + plotfile_name
 
     plt.savefig(plotfile_name)
 
-    #plt.show()
+    # plt.show()
+
 
 plot_two_curves("input_curve", "Входные сигналы", "1")
 plot_two_curves("copied_curve", "Скопированные кривые", "2")
 plot_two_curves("scaled", "Кривые после масштабирования", "3")
 plot_two_curves("repeats_removed", "Кривые после устранения повторов", "4")
 plot_two_curves("splined", "После равномерного распределения точек", "5")
-
