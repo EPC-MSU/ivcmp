@@ -14,7 +14,8 @@ iv_data = {}
 class TestStringMethods(unittest.TestCase):
 
     def test_nan(self):
-        for i in range(1, 10):
+        count = 0
+        for i in range(1, 21):
             ind_1 = random.randint(1, 41)
             ind_2 = random.randint(1, 41)
             filename_1 = "{}/elements ({}).json".format(json_folder, ind_1)
@@ -33,18 +34,23 @@ class TestStringMethods(unittest.TestCase):
                 score = ivcmp.CompareIvc(iv_curve, ivc_curve)
                 assert (0 <= score <= 1.)
             except AssertionError:
+                count += 1
                 print("AssertionError: comp_1: {}, comp_2: {}"
                       "score - {}".format(i, ind_1, ind_2, score))
             except Exception as e:
                 print("ERROR in elements ({}).json: {}".format(i, e))
+        print("There is {} errors of 20 random comparing".format(count))
         self.assertTrue(True)
 
     def test_compare(self):
+        count = 0
+        common_count = 0
         for i in range(1, 42):
             filename = "{}/elements ({}).json".format(json_folder, i)
             with open(filename) as f:
                 ivc_data = json.load(f)
                 for pin in ivc_data["elements"][0]["pins"]:
+                    common_count += 1
                     try:
                         n_points = len(pin["ivc"]["voltage"])
                         iv_curve.voltages[:n_points] = pin["ivc"]["voltage"]
@@ -59,10 +65,12 @@ class TestStringMethods(unittest.TestCase):
                         print("AssertionError in elements ({}).json, {} component: "
                               "score - {}, target_score - {}".format(i, ivc_data["elements"][0]["pins"].index(pin),
                                                                      score, target_score))
+                        count += 1
                     except Exception as e:
                         print("ERROR in elements ({}).json: {}".format(i, e))
+        print("There is {} errors of {} comparing".format(count, common_count))
         self.assertTrue(True)
-        
+
 
 if __name__ == "__main__":
     unittest.main()
