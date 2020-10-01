@@ -4,7 +4,7 @@ import numpy as np
 import ivcmp
 import random
 from iv_compare import compare_ivc
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 json_folder = "test_data"
 iv_curve = ivcmp.IvCurve()
@@ -66,13 +66,14 @@ class TestStringMethods(unittest.TestCase):
                                                [pin["reference_ivc"]["voltage"][:n_points],
                                                 pin["reference_ivc"]["current"][:n_points]])
                         target_score = pin["score"]
-                        assert (np.abs(score_py - target_score) < 0.05)
+                        assert (np.abs(score_c - target_score) < 0.05)
                     except AssertionError:
                         print("AssertionError in elements ({}).json, {} component: "
-                              "score - {}, target_score - {}, score_py - {}".format(i, ivc_data["elements"][0]["pins"].index(pin),
-                                                                     score_c, target_score, score_py))
+                              "score - {}, target_score - {}, "
+                              "score_py - {}".format(i, ivc_data["elements"][0]["pins"].index(pin), score_c,
+                                                     target_score, score_py))
 
-                        plt.suptitle("score - {}, target_score - {}, score_py - {}".format(np.round(score_c, 2),
+                        """plt.suptitle("score - {}, target_score - {}, score_py - {}".format(np.round(score_c, 2),
                                                                                            np.round(target_score, 2),
                                                                                            np.round(score_py, 2)))
                         plt.plot(pin["ivc"]["voltage"][:n_points], pin["ivc"]["current"][:n_points], marker="o",
@@ -80,7 +81,7 @@ class TestStringMethods(unittest.TestCase):
                         plt.plot(pin["reference_ivc"]["voltage"][:n_points], pin["reference_ivc"]["current"][:n_points],
                                  marker="o", linestyle="dashed", label="Reference curve")
                         plt.legend()
-                        plt.show()
+                        plt.show()"""
                         count += 1
                     except Exception as e:
                         print("ERROR in elements ({}).json: {}".format(i, e))

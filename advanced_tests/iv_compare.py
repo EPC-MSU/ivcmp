@@ -32,40 +32,7 @@ def rescale_score(x):
     return 1 - np.exp(-8 * x)
 
 
-def dist_curve_pts_slow(curve, pts):
-    res = 0.0
-    for pt in pts.T:
-        min_v = np.inf
-        for i in range(1, len(curve[0])):
-            v = dist2_pt_seg(pt, curve[:, i - 1], curve[:, i])
-            if v < min_v:
-                min_v = v
-                min_i = i
-        res += min_v
-        v = dist2(pt, curve[:, min_i])
-        # if abs((v / min_v) - 1) > 0.1:
-        #    print('seg, pts =', v, min_v)
-    return res
-
-
-def dist_curve_pts_rude(curve, pts):
-    res = 0.0
-    for pt in pts.T:
-        minv = np.inf
-        for i in range(0, len(curve[0])):
-            v = dist2(pt, curve[:, i])
-            # vdiff = pt[0] - curve[0, i]
-            # cdiff = pt[1] - curve[1, i]
-            # v = vdiff * vdiff + cdiff * cdiff
-            if v < minv:
-                minv = v
-                min_i = i
-        res += minv
-    return res
-
-
 def dist_curve_pts(curve, pts):
-    
     res = 0.0
     for pt in pts.T:
         v = (curve[0] - pt[0]) * (curve[0] - pt[0]) + (curve[1] - pt[1]) * (curve[1] - pt[1])
@@ -167,7 +134,7 @@ class MainWindow(QWidget):
             score = calc_score(ivc_real, ivc_virt)
             self.lbl.setText("Score: " + str(score))
             self.lbl.adjustSize()
-            figure1 = plt.figure(1, (10, 5))
+            plt.figure(1, (10, 5))
             plt.plot(ivc_real["ivc"]["voltages"], ivc_real["ivc"]["currents"], color="g")
             plt.plot(ivc_virt["ivc"]["voltages"], ivc_virt["ivc"]["currents"], color="r")
             plt.xlabel("Напряжение [В]")
