@@ -4,7 +4,7 @@ import numpy as np
 import ivcmp
 import random
 from iv_compare import compare_ivc
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 json_folder = "test_data"
 iv_curve = ivcmp.IvCurve()
