@@ -4,7 +4,7 @@ import numpy as np
 import ivcmp
 import random
 from iv_compare import compare_ivc
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 json_folder = "test_data"
 iv_curve = ivcmp.IvCurve()
@@ -29,6 +29,8 @@ class TestStringMethods(unittest.TestCase):
             try:
                 n_points = np.min([len(iv_data["elements"][0]["pins"][0]["ivc"]["voltage"]),
                                    len(ivc_data["elements"][0]["pins"][0]["ivc"]["voltage"])])
+                iv_curve.length = n_points
+                ivc_curve.length = n_points
                 iv_curve.voltages[:n_points] = iv_data["elements"][0]["pins"][0]["ivc"]["voltage"][:n_points]
                 iv_curve.currents[:n_points] = iv_data["elements"][0]["pins"][0]["ivc"]["current"][:n_points]
                 ivc_curve.voltages[:n_points] = ivc_data["elements"][0]["pins"][0]["ivc"]["voltage"][:n_points]
@@ -55,11 +57,14 @@ class TestStringMethods(unittest.TestCase):
                     common_count += 1
                     try:
                         n_points = len(pin["ivc"]["voltage"])
-                        iv_curve.voltages[:n_points] = pin["ivc"]["voltage"]
-                        iv_curve.currents[:n_points] = pin["ivc"]["current"]
-                        ivc_curve.voltages[:n_points] = pin["reference_ivc"]["voltage"]
-                        ivc_curve.currents[:n_points] = pin["reference_ivc"]["current"]
-                        ivcmp.SetMinVC(0.5 * np.max(pin["ivc"]["voltage"]), 0.5 * np.max(pin["ivc"]["current"]))
+                        iv_curve.length = n_points
+                        ivc_curve.length = n_points
+                        iv_curve.voltages[:n_points] = pin["ivc"]["voltage"][:n_points]
+                        iv_curve.currents[:n_points] = pin["ivc"]["current"][:n_points]
+                        ivc_curve.voltages[:n_points] = pin["reference_ivc"]["voltage"][:n_points]
+                        ivc_curve.currents[:n_points] = pin["reference_ivc"]["current"][:n_points]
+                        ivcmp.SetMinVC(max(np.max(pin["ivc"]["current"]), 0.6) / 2,
+                                       max(np.max(pin["ivc"]["current"]), 0.0002) / 2)
                         score_c = ivcmp.CompareIvc(iv_curve, ivc_curve)
                         score_py = compare_ivc([pin["ivc"]["voltage"][:n_points],
                                                 pin["ivc"]["current"][:n_points]],

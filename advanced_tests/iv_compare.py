@@ -10,6 +10,7 @@ from PyQt5 import QtCore
 import pylab
 
 eq_k = 1
+DEBUG_MODE = False
 
 
 def dist2_pt_seg(p, a, b):
@@ -57,6 +58,13 @@ def compare_ivc(a, b=None, min_var_v=None, min_var_c=None):
 
     if a is None:
         return 0
+    if DEBUG_MODE:
+        with open("input_curve_a_py.txt", "w") as f:
+            for i in range(len(a[0])):
+                f.write("{}\t{}\n".format(a[0][i], a[1][i]))
+        with open("input_curve_b_py.txt", "w") as f:
+            for i in range(len(a[0])):
+                f.write("{}\t{}\n".format(b[0][i], b[1][i]))
     min_v = max(np.max(a[0]), 0.6)
     min_c = max(np.max(a[1]), 0.0002)
     # Now a and b - curves - tuple(voltage_points, current_points)
@@ -70,20 +78,51 @@ def compare_ivc(a, b=None, min_var_v=None, min_var_c=None):
     # The variance is the average of the squared deviations from the mean, i.e., var = mean(abs(x - x.mean())**2).
     var_v = max(np.var(a[0]) ** 0.5, np.var(b[0]) ** 0.5 if b is not None else 0, min_var_v)
     var_c = max(np.var(a[1]) ** 0.5, np.var(b[1]) ** 0.5 if b is not None else 0, min_var_c)
+    if DEBUG_MODE:
+        with open("variations_py.txt", "w") as f:
+            f.write("{}\t{}\n".format(var_v, var_c))
     _eq_k = 1
     an = np.subtract(a[0], np.mean(a[0])) / var_v, np.subtract(a[1], np.mean(a[1])) / var_c
+    if DEBUG_MODE:
+        with open("scaled_a_py.txt", "w") as f:
+            for i in range(len(an[0])):
+                f.write("{}\t{}\n".format(an[0][i], an[1][i]))
     an = remove_repeats_ivc(an)
+    if DEBUG_MODE:
+        with open("repeats_removed_a_py.txt", "w") as f:
+            for i in range(len(an[0])):
+                f.write("{}\t{}\n".format(an[0][i], an[1][i]))
     tck, u = interpolate.splprep(an, s=0.00)
     eq1 = np.array(interpolate.splev(np.arange(0, 1, 1.0 / len(a[0]) / _eq_k), tck))
-
+    if DEBUG_MODE:
+        with open("splined_a_py.txt", "w") as f:
+            for i in range(len(eq1[0])):
+                f.write("{}\t{}\n".format(eq1[0][i], eq1[1][i]))
     if b is not None:
         bn = np.subtract(b[0], np.mean(b[0])) / var_v, np.subtract(b[1], np.mean(b[1])) / var_c
+        if DEBUG_MODE:
+            with open("scaled_b_py.txt", "w") as f:
+                for i in range(len(bn[0])):
+                    f.write("{}\t{}\n".format(bn[0][i], bn[1][i]))
         bn = remove_repeats_ivc(bn)
+        if DEBUG_MODE:
+            with open("repeats_removed_b_py.txt", "w") as f:
+                for i in range(len(an[0])):
+                    f.write("{}\t{}\n".format(bn[0][i], bn[1][i]))
         tck, u = interpolate.splprep(bn, s=0.00)
         eq2 = np.array(interpolate.splev(np.arange(0, 1, 1.0 / len(b[0]) / _eq_k), tck))
+        if DEBUG_MODE:
+            with open("splined_b_py.txt", "w") as f:
+                for i in range(len(eq2[0])):
+                    f.write("{}\t{}\n".format(eq2[0][i], eq2[1][i]))
     if b is None:
         return rescale_score(np.mean(eq1[1, :] ** 2))
     else:
+        if DEBUG_MODE:
+            with open("dist_and_scores_py.txt", "w") as f:
+                f.write("distAB: {}\n".format((dist_curve_pts(eq1, eq2))))
+                f.write("distBA: {}\n".format((dist_curve_pts(eq2, eq1))))
+                f.write("score: {}\n".format(rescale_score((dist_curve_pts(eq1, eq2) + dist_curve_pts(eq2, eq1)) / 2.)))
         return rescale_score((dist_curve_pts(eq1, eq2) + dist_curve_pts(eq2, eq1)) / 2.)
 
 

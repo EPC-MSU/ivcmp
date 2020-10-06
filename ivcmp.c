@@ -555,6 +555,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   uint32_t i;
   double VarV, VarC;
   double Score;
+
 #ifdef DebugOutFile_OUTPUT
   FILE *DebugOutFile;
 #endif
@@ -778,12 +779,9 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
 
 #ifdef DebugOutFile_OUTPUT
     OPEN_FILE(DebugOutFile, "dist_and_scores.txt", "w");
-    for (i = 0; i < SizeA; i++)
-    {
-        fprintf(DebugOutFile, "dist_a_b = %lf\n", DistAB);
-        fprintf(DebugOutFile, "dist_b_a = %lf\n", DistBA);
-        fprintf(DebugOutFile, "score = %lf\n", Score);
-    }
+    fprintf(DebugOutFile, "dist_a_b = %lf\n", DistAB);
+    fprintf(DebugOutFile, "dist_b_a = %lf\n", DistBA);
+    fprintf(DebugOutFile, "score = %lf\n", Score);
     fclose(DebugOutFile);
 #endif
   }
