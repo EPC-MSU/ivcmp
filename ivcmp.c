@@ -549,8 +549,7 @@ void SetMinVC(double NewMinV, double NewMinC)
  * @return score of difference between the curves; 1.0 for completely different curves, 0.0 for same curves
  */
 double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
-      double *VoltagesB, double *CurrentsB, 
-      uint32_t  CurveLengthB)
+                  double *VoltagesB, double *CurrentsB, uint32_t  CurveLengthB)
 {
   uint32_t i;
   double VarV, VarC;
