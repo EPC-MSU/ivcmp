@@ -13,7 +13,7 @@
 /* Uncomment this to save temporary results 
  * to files on intermediate steps
  */
-//#define DebugOutFile_OUTPUT
+//#define DEBUG_FILE_OUTPUT
 
 /*********************************/
 /*    Definitions                */
@@ -556,11 +556,11 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   double VarV, VarC;
   double Score;
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
   FILE *DebugOutFile;
 #endif
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
   OPEN_FILE(DebugOutFile, "input_curve_a.txt", "w");
   for (i = 0; i < CurveLengthA; i++)
   {
@@ -608,7 +608,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     }
   }
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
   OPEN_FILE(DebugOutFile, "copied_curve_a.txt", "w");
   for (i = 0; i < CurveLengthA; i++)
   {
@@ -629,7 +629,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   VarV = max(_v, MinVarV);
   VarC = max(_c, MinVarC);
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
   OPEN_FILE(DebugOutFile, "variations.txt", "w");
   fprintf(DebugOutFile, "VarV = %lf\n", VarV);
   fprintf(DebugOutFile, "VarC = %lf\n", VarC);
@@ -645,7 +645,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     a_[1][i] = a_[1][i] / VarC;
   }
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
   OPEN_FILE(DebugOutFile, "scaled_a.txt", "w");
   for (i = 0; i < CurveLengthA; i++)
   {
@@ -658,7 +658,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
   uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLengthA);
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
   OPEN_FILE(DebugOutFile, "repeats_removed_a.txt", "w");
   for (i = 0; i < SizeA; i++)
   {
@@ -693,7 +693,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     a_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
   }
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
   OPEN_FILE(DebugOutFile, "splined_a.txt", "w");
   for (i = 0; i < CurveLength; i++)
   {
@@ -718,7 +718,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
       b_[1][i] = b_[1][i] / VarC;
     }
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
     OPEN_FILE(DebugOutFile, "scaled_b.txt", "w");
     for (i = 0; i < CurveLengthB; i++)
     {
@@ -729,7 +729,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
 
     uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLengthB);
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
     OPEN_FILE(DebugOutFile, "repeats_removed_b.txt", "w");
     for (i = 0; i < SizeB; i++)
     {
@@ -764,7 +764,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
       b_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
     }
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
     OPEN_FILE(DebugOutFile, "splined_b.txt", "w");
     for (i = 0; i < CurveLength; i++)
     {
@@ -777,7 +777,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     double DistBA = DistCurvePts(b_, a_, CurveLength);
     Score = RescaleScore((DistAB + DistBA) / 2.);
 
-#ifdef DebugOutFile_OUTPUT
+#ifdef DEBUG_FILE_OUTPUT
     OPEN_FILE(DebugOutFile, "dist_and_scores.txt", "w");
     fprintf(DebugOutFile, "dist_a_b = %lf\n", DistAB);
     fprintf(DebugOutFile, "dist_b_a = %lf\n", DistBA);
