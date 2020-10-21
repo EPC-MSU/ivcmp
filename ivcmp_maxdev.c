@@ -39,7 +39,7 @@ static double Abs(double x)
  * @param C currents in the curve
  * @param[in] SizeJ number of points 
  */
-static uint32_t RemoveRepeats(double *V, double *C, double SizeJ)
+static uint32_t RemoveRepeats(double *V, double *C, uint32_t SizeJ)
 {
     uint32_t i, n;
     n = 0;
@@ -69,27 +69,23 @@ static double DistCurvePts(double *Curve, uint32_t SizeCurve, double *pts, uint3
 {
     uint32_t i, j;
     double dist;
-    double DistMin[SizeCurve];
+    double DistMin;
     double DistMax = 0;
 
     for (i = 0; i < SizeCurve; i++)
     {
-        DistMin[i] = 100000;
+        DistMin = 100000;
         for (j = 0; j < Sizepts; i++)
         {
             dist = Abs(Curve[i] - pts[j]);
-            if (dist < DistMin[i])
+            if (dist < DistMin)
             {
-                DistMin[i] = dist;
+                DistMin = dist;
             }
         }
-    }
-
-    for (i = 0; i < SizeCurve; i++)
-    {
-        if (DistMin[i] > DistMax)
+        if (DistMin > DistMax)
         {
-            DistMax = DistMin[i];
+            DistMax = DistMin;
         }
     }
 
@@ -112,14 +108,14 @@ static double RescaleDev(double Score, double norm)
  * @param normV voltages norm
  * @param normC currents norm
  */
-static void SetNorm(double *VoltagesRef, double normV, double *CurrentsRef, double normC, double CurveLengthRef)
+static void SetNorm(double *VoltagesRef, double normV, double *CurrentsRef, double normC, uint32_t CurveLengthRef)
 {
     uint32_t i;
 
     for (i=0; i < CurveLengthRef; i++)
     {
-        if (normV < VoltagesRef[i]) {normV = VoltagesRef;}
-        if (normC < CurrentsRef[i]) {normC = CurrentsRef;}
+        if (normV < VoltagesRef[i]) {normV = VoltagesRef[i];}
+        if (normC < CurrentsRef[i]) {normC = CurrentsRef[i];}
     }
 }
 
@@ -143,7 +139,7 @@ void ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t Cur
                           double ScoreV, double ScoreC)
 {
   double normV = MIN_NORM_V;
-  double normC = MIN_NORM_C
+  double normC = MIN_NORM_C;
 
   if (!VoltagesRef | !CurrentsRef)
   {
@@ -160,7 +156,7 @@ void ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t Cur
 
   if ((SizeRef < MIN_LEN_CURVE) || (SizeTest < MIN_LEN_CURVE))
   {
-    printef("ERROR: one of the curves have identical elements.");
+    printf("ERROR: one of the curves have identical elements.");
     ScoreV = SCORE_ERROR;
     ScoreC = SCORE_ERROR;
     return;
