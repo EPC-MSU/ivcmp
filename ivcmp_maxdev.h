@@ -31,7 +31,7 @@ extern "C"
  * @param ScoreV Максимальное отклонение по напряжениям
  * @param ScoreC Максимальное отнлонение по токам
  */
-EXPORT double CCONV ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t CurveLengthRef,
+EXPORT void CCONV ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t CurveLengthRef,
                                        double *VoltagesTest, double *CurrentsTest, uint32_t CurveLengthTest,
                                        double *ScoreV, double *ScoreC);
 #ifdef __cplusplus

@@ -8,7 +8,7 @@
 #include <math.h>
 #include "ivcmp_maxdev.h"
 
-#define SCORE_ERROR -1
+#define SCORE_ERROR -1.
 #define MIN_NORM_V 0.6
 #define MIN_NORM_C 0.0002
 #define MIN_LEN_CURVE 2
@@ -78,11 +78,13 @@ static double DistCurvePts(double *Curve, uint32_t SizeCurve, double *pts, uint3
         for (j = 0; j < Sizepts; j++)
         {
             dist = Abs(Curve[i] - pts[j]);
+            //printf("%.2f - %.2f = %.2f\n", (float)Curve[i], (float)pts[j], (float)dist);
             if (dist < DistMin)
             {
                 DistMin = dist;
             }
         }
+        //printf("DistMin is %.2f\n-----------------\n", (float)DistMin);
         if (DistMin > DistMax)
         {
             DistMax = DistMin;
@@ -134,7 +136,7 @@ static void SetNorm(double *VoltagesRef, double *normV, double *CurrentsRef, dou
  * @param ScoreC currents deviation
  */
 
-double ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t CurveLengthRef,
+void ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t CurveLengthRef,
                           double *VoltagesTest, double *CurrentsTest, uint32_t CurveLengthTest,
                           double *ScoreV, double *ScoreC)
 {
@@ -144,40 +146,31 @@ double ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t C
 
     if (!VoltagesRef | !CurrentsRef)
     {
+        printf("ERROR: reference curve is not given.");
         *ScoreV = SCORE_ERROR;
         *ScoreC = SCORE_ERROR;
-        return -1;
+        return;
     }
     
-    printf("%f, %f \n", (float)normV, (float)normC);
     SetNorm(VoltagesRef, &normV, CurrentsRef, &normC, CurveLengthRef);
-    printf("%f, %f \n", (float)normV, (float)normC);
 
     //CurveLength should be same for Voltages and Currents of the same curve (???)
     uint32_t SizeRef = RemoveRepeats(VoltagesRef, CurrentsRef, CurveLengthRef);
-    printf("Removed repeats, SizeRef %lu \n", (unsigned long)SizeRef);
     uint32_t SizeTest = RemoveRepeats(VoltagesTest, CurrentsTest, CurveLengthTest);
-    printf("Removed repeats, SizeTest %lu \n", (unsigned long)SizeTest);
 
     if ((SizeRef < MIN_LEN_CURVE) || (SizeTest < MIN_LEN_CURVE))
     {
-        printf("ERROR: one of the curves have identical elements.");
+        printf("ERROR: at least one of the curves have identical elements.");
         *ScoreV = SCORE_ERROR;
         *ScoreC = SCORE_ERROR;
-        return -1;
+        return;
     }
 
     /*BSpline();*/
 
     *ScoreV = DistCurvePts(VoltagesRef, SizeRef, VoltagesTest, SizeTest);
-    printf("ScoreV %.2f \n", (float)*ScoreV);
     *ScoreC = DistCurvePts(CurrentsRef, SizeRef, CurrentsTest, SizeTest);
-    printf("ScoreC %.2f \n", (float)*ScoreC);
 
     *ScoreV = RescaleDev(*ScoreV, normV);
-    printf("ScoreV %.2f \n", (float)*ScoreV);
     *ScoreC = RescaleDev(*ScoreC, normC);
-    printf("ScoreC %.2f \n", (float)*ScoreC);
-
-    return 0;
 }
