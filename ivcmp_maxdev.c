@@ -75,7 +75,7 @@ static double DistCurvePts(double *Curve, uint32_t SizeCurve, double *pts, uint3
     for (i = 0; i < SizeCurve; i++)
     {
         DistMin = 100000;
-        for (j = 0; j < Sizepts; i++)
+        for (j = 0; j < Sizepts; j++)
         {
             dist = Abs(Curve[i] - pts[j]);
             if (dist < DistMin)
@@ -108,14 +108,14 @@ static double RescaleDev(double Score, double norm)
  * @param normV voltages norm
  * @param normC currents norm
  */
-static void SetNorm(double *VoltagesRef, double normV, double *CurrentsRef, double normC, uint32_t CurveLengthRef)
+static void SetNorm(double *VoltagesRef, double *normV, double *CurrentsRef, double *normC, uint32_t CurveLengthRef)
 {
     uint32_t i;
 
     for (i=0; i < CurveLengthRef; i++)
     {
-        if (normV < VoltagesRef[i]) {normV = VoltagesRef[i];}
-        if (normC < CurrentsRef[i]) {normC = CurrentsRef[i];}
+        if (*normV < Abs(VoltagesRef[i])) {*normV = Abs(VoltagesRef[i]);}
+        if (*normC < Abs(CurrentsRef[i])) {*normC = Abs(CurrentsRef[i]);}
     }
 }
 
@@ -130,43 +130,54 @@ static void SetNorm(double *VoltagesRef, double normV, double *CurrentsRef, doub
  * @param[in] VoltagesTest voltages of the test curve
  * @param[in] CurrentsTest currents of the test curve
  * @param[in] CurveLength number of points in the curves
- * 
- * @return struct of maximum deviations between curves relative to the maximum values of reference curve (Voltages and Currents apart)
+ * @param ScoreV voltages deviation
+ * @param ScoreC currents deviation
  */
 
-void ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t CurveLengthRef,
+double ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t CurveLengthRef,
                           double *VoltagesTest, double *CurrentsTest, uint32_t CurveLengthTest,
-                          double ScoreV, double ScoreC)
+                          double *ScoreV, double *ScoreC)
 {
-  double normV = MIN_NORM_V;
-  double normC = MIN_NORM_C;
+    double normV = MIN_NORM_V;
+    double normC = MIN_NORM_C;
 
-  if (!VoltagesRef | !CurrentsRef)
-  {
-    ScoreV = SCORE_ERROR;
-    ScoreC = SCORE_ERROR;
-    return;
-  }
 
-  SetNorm(VoltagesRef, normV, CurrentsRef, normC, CurveLengthRef);
+    if (!VoltagesRef | !CurrentsRef)
+    {
+        *ScoreV = SCORE_ERROR;
+        *ScoreC = SCORE_ERROR;
+        return -1;
+    }
+    
+    printf("%f, %f \n", (float)normV, (float)normC);
+    SetNorm(VoltagesRef, &normV, CurrentsRef, &normC, CurveLengthRef);
+    printf("%f, %f \n", (float)normV, (float)normC);
 
-  //CurveLength should be same for Voltages and Currents of the same curve (???)
-  uint32_t SizeRef = RemoveRepeats(VoltagesRef, CurrentsRef, CurveLengthRef);
-  uint32_t SizeTest = RemoveRepeats(VoltagesTest, CurrentsTest, CurveLengthTest);
+    //CurveLength should be same for Voltages and Currents of the same curve (???)
+    uint32_t SizeRef = RemoveRepeats(VoltagesRef, CurrentsRef, CurveLengthRef);
+    printf("Removed repeats, SizeRef %lu \n", (unsigned long)SizeRef);
+    uint32_t SizeTest = RemoveRepeats(VoltagesTest, CurrentsTest, CurveLengthTest);
+    printf("Removed repeats, SizeTest %lu \n", (unsigned long)SizeTest);
 
-  if ((SizeRef < MIN_LEN_CURVE) || (SizeTest < MIN_LEN_CURVE))
-  {
-    printf("ERROR: one of the curves have identical elements.");
-    ScoreV = SCORE_ERROR;
-    ScoreC = SCORE_ERROR;
-    return;
-  }
+    if ((SizeRef < MIN_LEN_CURVE) || (SizeTest < MIN_LEN_CURVE))
+    {
+        printf("ERROR: one of the curves have identical elements.");
+        *ScoreV = SCORE_ERROR;
+        *ScoreC = SCORE_ERROR;
+        return -1;
+    }
 
-  /*BSpline();*/
+    /*BSpline();*/
 
-  ScoreV = DistCurvePts(VoltagesRef, SizeRef, VoltagesTest, SizeTest);
-  ScoreC = DistCurvePts(CurrentsRef, SizeRef, CurrentsTest, SizeTest);
+    *ScoreV = DistCurvePts(VoltagesRef, SizeRef, VoltagesTest, SizeTest);
+    printf("ScoreV %.2f \n", (float)*ScoreV);
+    *ScoreC = DistCurvePts(CurrentsRef, SizeRef, CurrentsTest, SizeTest);
+    printf("ScoreC %.2f \n", (float)*ScoreC);
 
-  ScoreV = RescaleDev(ScoreV, normV);
-  ScoreC = RescaleDev(ScoreC, normC);
+    *ScoreV = RescaleDev(*ScoreV, normV);
+    printf("ScoreV %.2f \n", (float)*ScoreV);
+    *ScoreC = RescaleDev(*ScoreC, normC);
+    printf("ScoreC %.2f \n", (float)*ScoreC);
+
+    return 0;
 }
