@@ -58,40 +58,51 @@ static uint32_t RemoveRepeats(double *V, double *C, uint32_t SizeJ)
 
 /** Returns maximum distance between two curves
  * 
- * @param[in] Curve reference curve
+ * @param[in] CurveV reference curve voltages
+ * @param[in] CurveC reference curve currents
  * @param[in] SizeCurve number of points in the reference curve
- * @param[in] pts test curve
+ * @param[in] ptsV test curve voltages
+ * @param[in] ptsC test curve currents
  * @param[in] Sizepts number of ponts in test curve
  * 
- * @return maximum distance between two nearby points of the curves
+ * @param DistMaxV maximum voltage distance in a set of nearest points
+ * @param DistMaxC maximum current distance in a set of nearest points
  */
-static double DistCurvePts(double *Curve, uint32_t SizeCurve, double *pts, uint32_t Sizepts)
+static void DistCurvePts(double *CurveV, double *CurveC, uint32_t SizeCurve, double *ptsV, double *ptsC, uint32_t Sizepts,
+                         double **DistMaxV, double **DistMaxC)
 {
     uint32_t i, j;
-    double dist;
-    double DistMin;
-    double DistMax = 0;
+    double dist, distV, distC;
+    double DistMin, DistMinV, DistMinC;
+    **DistMaxV = 0;
+    **DistMaxC = 0;
 
     for (i = 0; i < SizeCurve; i++)
     {
         DistMin = 100000;
+        DistMinV = 100000;
+        DistMinC = 100000;
         for (j = 0; j < Sizepts; j++)
         {
-            dist = Abs(Curve[i] - pts[j]);
-            //printf("%.2f - %.2f = %.2f\n", (float)Curve[i], (float)pts[j], (float)dist);
+            distV = Abs(CurveV[i] - ptsV[j]);
+            distC = Abs(CurveC[i] - ptsC[j]);
+            dist = distV * distV + distC * distC;
             if (dist < DistMin)
             {
                 DistMin = dist;
+                DistMinV = distV;
+                DistMinC = distC;
             }
         }
-        //printf("DistMin is %.2f\n-----------------\n", (float)DistMin);
-        if (DistMin > DistMax)
+        if (DistMinV > **DistMaxV)
         {
-            DistMax = DistMin;
+            **DistMaxV = DistMinV;
+        }
+        if (DistMinC > **DistMaxC)
+        {
+            **DistMaxC = DistMinC;
         }
     }
-
-    return DistMax;
 }
 
 /**
@@ -168,8 +179,7 @@ void ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t Cur
 
     /*BSpline();*/
 
-    *ScoreV = DistCurvePts(VoltagesRef, SizeRef, VoltagesTest, SizeTest);
-    *ScoreC = DistCurvePts(CurrentsRef, SizeRef, CurrentsTest, SizeTest);
+    DistCurvePts(VoltagesRef, CurrentsRef, SizeRef, VoltagesTest, CurrentsTest, SizeTest, &ScoreV, &ScoreC);
 
     *ScoreV = RescaleDev(*ScoreV, normV);
     *ScoreC = RescaleDev(*ScoreC, normC);

@@ -4,7 +4,7 @@
 #include "ivcmp.h"
 #include "ivcmp_maxdev.h"
 
-#define MAX_NUM_POINTS 20
+#define MAX_NUM_POINTS 1000
 
 #define VOLTAGE_AMPL 12.
 #define R_CS 475.
@@ -137,31 +137,67 @@ int main(void)
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ]\n", (float)DevV, (float)DevC);
+  printf("Score = [ %.2f, %.2f ], should be [0.0, 0.0]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV) > 0.01) | (fabs(DevC) > 0.01))
+  {
+    printf("Test failed!!!\n");
+    return -1;
+  }
 
-  printf("--- Test 2. Compute max deviations between absolutely different curves.\n");
+  printf("--- Test 2. Compute max deviations between absolutely different curves (reference -- open circuit).\n");
   ComputeMaxDeviations(IVCOpenCircuit.Voltages, IVCOpenCircuit.Currents, MAX_NUM_POINTS,
                        IVCShortCircuit.Voltages, IVCShortCircuit.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ]\n", (float)DevV, (float)DevC);
+  printf("Score = [ %.2f, %.2f ], should be [1.0, 0.0]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV - 1) > 0.01) | (fabs(DevC) > 0.01))
+  {
+    printf("Test failed!!!\n");
+    return -1;
+  }
 
-  printf("--- Test 3. Compute max deviations between similar curves.\n");
+  printf("--- Test 3. Compute max deviations between absolutely different curves but swap them (reference -- short circuit).\n");
+  ComputeMaxDeviations(IVCShortCircuit.Voltages, IVCShortCircuit.Currents, MAX_NUM_POINTS,
+                       IVCOpenCircuit.Voltages, IVCOpenCircuit.Currents, MAX_NUM_POINTS,
+                       &DevV, &DevC);
+  printf("Score = [ %.2f, %.2f ], should be [0.0, 1.0]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV) > 0.01) | (fabs(DevC - 1) > 0.01))
+  {
+    printf("Test failed!!!\n");
+    return -1;
+  }
+
+  printf("--- Test 4. Compute max deviations between similar curves.\n");
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCResistor2.Voltages, IVCResistor2.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ]\n", (float)DevV, (float)DevC);
+  printf("Score = [ %.2f, %.2f ], should be [0.26, 0.15]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV - 0.26) > 0.05) | (fabs(DevC - 0.15) > 0.05))
+  {
+    printf("Test failed!!!\n");
+    //return -1;
+  }
 
-  printf("--- Test 4. Compute max deviations between different curves.\n");
+  printf("--- Test 5. Compute max deviations between different curves.\n");
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCCapacitor.Voltages, IVCCapacitor.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ]\n", (float)DevV, (float)DevC);
+  printf("Score = [ %.2f, %.2f ], should be [2.0, 0.31]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV - 2.0) > 0.05) | (fabs(DevC - 0.37) > 0.05))
+  {
+    printf("Test failed!!!\n");
+    //return -1;
+  }
 
-  printf("--- Test 5. Compute max deviations between curves with different lengths.\n");
+  printf("--- Test 6. Compute max deviations between curves with different lengths.\n");
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCResistor3.Voltages, IVCResistor3.Currents, num_points_for_r_3,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ]\n", (float)DevV, (float)DevC);
+  printf("Score = [ %.2f, %.2f ], should be [0.65, 0.31]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV - 0.65) > 0.05) | (fabs(DevC - 0.31) > 0.05))
+  {
+    printf("Test failed!!!\n");
+    //return -1;
+  }
 
   printf("All tests successfully passed.\n");
 
