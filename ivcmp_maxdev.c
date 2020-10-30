@@ -56,6 +56,49 @@ static uint32_t RemoveRepeats(double *V, double *C, uint32_t SizeJ)
     return n;
 }
 
+/**
+ * Calculates the voltage and current distances between a point and a segment
+ * 
+ * @param[in] x0,y0 coords of the point
+ * @param[in] x1,y1 coords of the start of the segment
+ * @param[in] x2,y2 coords of the end of the segment
+ * @param distx voltage distance
+ * @param disty current distance
+ * 
+ **/
+static void Dist2PtSeg(double x0, double y0, double x1, double y1, double x2, double y2, double *distx, double *disty)
+{
+    double seglen2, proj;
+    double a, b, c, d, det, detx, dety;
+
+    seglen2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+    proj = ((x0 - x1) * (x2 - x1) + (y0 - y1) * (y2 - y1)) / seglen2;
+    if (proj > 1)
+    {
+        *distx = Abs(x0 - x2);
+        *disty = Abs(y0 - y2);
+    }
+    else if (proj < 0)
+    {
+        *distx = Abs(x0 - x1);
+        *disty = Abs(y0 - y1);
+    }
+    else
+    {
+        //solve linear equation using kramer's rule
+        a = x2 - x1;
+        b = y2 - y1;
+        c = x2 * b - y2 * a;
+        d = x0 * a + y0 * b;
+        det = b * b + a * a;
+        detx = c * b + a * d;
+        dety = d * b - a * c;
+
+        *distx = detx / det;
+        *disty = dety / det;
+    }
+}
+
 /** Returns maximum distance between two curves
  * 
  * @param[in] CurveV reference curve voltages
@@ -74,16 +117,19 @@ static void DistCurvePts(double *CurveV, double *CurveC, uint32_t SizeCurve, dou
     uint32_t i, j;
     double dist, distV, distC;
     double DistMin, DistMinV, DistMinC;
-    **DistMaxV = 0;
-    **DistMaxC = 0;
+    distV = 0.0;
+    distC = 0.0;
+    **DistMaxV = 0.0;
+    **DistMaxC = 0.0;
 
     for (i = 0; i < SizeCurve; i++)
     {
         DistMin = 100000;
         DistMinV = 100000;
         DistMinC = 100000;
-        for (j = 0; j < Sizepts; j++)
+        for (j = 0; j < Sizepts - 1; j++)
         {
+            Dist2PtSeg(CurveV[i], CurveC[i], ptsV[j], ptsC[j], ptsV[j+1], ptsC[j+1], &distV, &distC);
             distV = Abs(CurveV[i] - ptsV[j]);
             distC = Abs(CurveC[i] - ptsC[j]);
             dist = distV * distV + distC * distC;
@@ -165,7 +211,6 @@ void ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t Cur
     
     SetNorm(VoltagesRef, &normV, CurrentsRef, &normC, CurveLengthRef);
 
-    //CurveLength should be same for Voltages and Currents of the same curve (???)
     uint32_t SizeRef = RemoveRepeats(VoltagesRef, CurrentsRef, CurveLengthRef);
     uint32_t SizeTest = RemoveRepeats(VoltagesTest, CurrentsTest, CurveLengthTest);
 
@@ -176,8 +221,6 @@ void ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t Cur
         *ScoreC = SCORE_ERROR;
         return;
     }
-
-    /*BSpline();*/
 
     DistCurvePts(VoltagesRef, CurrentsRef, SizeRef, VoltagesTest, CurrentsTest, SizeTest, &ScoreV, &ScoreC);
 

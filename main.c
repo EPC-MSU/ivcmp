@@ -4,7 +4,7 @@
 #include "ivcmp.h"
 #include "ivcmp_maxdev.h"
 
-#define MAX_NUM_POINTS 1000
+#define MAX_NUM_POINTS 50
 
 #define VOLTAGE_AMPL 12.
 #define R_CS 475.
@@ -170,33 +170,33 @@ int main(void)
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCResistor2.Voltages, IVCResistor2.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ], should be [0.26, 0.15]\n", (float)DevV, (float)DevC);
-  if ((fabs(DevV - 0.26) > 0.05) | (fabs(DevC - 0.15) > 0.05))
+  printf("Score = [ %.2f, %.2f ], should be [0.24, 0.06]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV - 0.24) > 0.1) | (fabs(DevC - 0.06) > 0.1))
   {
     printf("Test failed!!!\n");
-    //return -1;
+    return -1;
   }
 
   printf("--- Test 5. Compute max deviations between different curves.\n");
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCCapacitor.Voltages, IVCCapacitor.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ], should be [2.0, 0.31]\n", (float)DevV, (float)DevC);
-  if ((fabs(DevV - 2.0) > 0.05) | (fabs(DevC - 0.37) > 0.05))
+  printf("Score = [ %.2f, %.2f ], should be [2.0, 0.17]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV - 2.0) > 0.1) | (fabs(DevC - 0.17) > 0.1))
   {
     printf("Test failed!!!\n");
-    //return -1;
+    return -1;
   }
 
   printf("--- Test 6. Compute max deviations between curves with different lengths.\n");
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCResistor3.Voltages, IVCResistor3.Currents, num_points_for_r_3,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ], should be [0.65, 0.31]\n", (float)DevV, (float)DevC);
-  if ((fabs(DevV - 0.65) > 0.05) | (fabs(DevC - 0.31) > 0.05))
+  printf("Score = [ %.2f, %.2f ], should be [0.54, 0.11]\n", (float)DevV, (float)DevC);
+  if ((fabs(DevV - 0.54) > 0.1) | (fabs(DevC - 0.11) > 0.1))
   {
     printf("Test failed!!!\n");
-    //return -1;
+    return -1;
   }
 
   printf("All tests successfully passed.\n");
