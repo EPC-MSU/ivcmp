@@ -87,15 +87,27 @@ static void Dist2PtSeg(double x0, double y0, double x1, double y1, double x2, do
     {
         //solve linear equation using kramer's rule
         a = x2 - x1;
+        if (a == 0)
+        {
+            *distx = Abs(x0 - x1);
+            *disty = 0;
+            return;
+        }
         b = y2 - y1;
+        if (b == 0)
+        {
+            *distx = 0;
+            *disty = Abs(y0 - y1);
+            return;
+        }
         c = x2 * b - y2 * a;
         d = x0 * a + y0 * b;
         det = b * b + a * a;
         detx = c * b + a * d;
         dety = d * b - a * c;
 
-        *distx = detx / det;
-        *disty = dety / det;
+        *distx = Abs(detx / det);
+        *disty = Abs(dety / det);
     }
 }
 
@@ -130,8 +142,6 @@ static void DistCurvePts(double *CurveV, double *CurveC, uint32_t SizeCurve, dou
         for (j = 0; j < Sizepts - 1; j++)
         {
             Dist2PtSeg(CurveV[i], CurveC[i], ptsV[j], ptsC[j], ptsV[j+1], ptsC[j+1], &distV, &distC);
-            distV = Abs(CurveV[i] - ptsV[j]);
-            distC = Abs(CurveC[i] - ptsC[j]);
             dist = distV * distV + distC * distC;
             if (dist < DistMin)
             {

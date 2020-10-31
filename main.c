@@ -138,7 +138,7 @@ int main(void)
                        IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
   printf("Score = [ %.2f, %.2f ], should be [0.0, 0.0]\n", (float)DevV, (float)DevC);
-  if ((fabs(DevV) > 0.01) | (fabs(DevC) > 0.01))
+  if ((fabs(DevV) > 0.1) | (fabs(DevC) > 0.1))
   {
     printf("Test failed!!!\n");
     return -1;
@@ -149,7 +149,7 @@ int main(void)
                        IVCShortCircuit.Voltages, IVCShortCircuit.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
   printf("Score = [ %.2f, %.2f ], should be [1.0, 0.0]\n", (float)DevV, (float)DevC);
-  if ((fabs(DevV - 1) > 0.01) | (fabs(DevC) > 0.01))
+  if ((fabs(DevV - 1) > 0.1) | (fabs(DevC) > 0.1))
   {
     printf("Test failed!!!\n");
     return -1;
@@ -160,7 +160,7 @@ int main(void)
                        IVCOpenCircuit.Voltages, IVCOpenCircuit.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
   printf("Score = [ %.2f, %.2f ], should be [0.0, 1.0]\n", (float)DevV, (float)DevC);
-  if ((fabs(DevV) > 0.01) | (fabs(DevC - 1) > 0.01))
+  if ((fabs(DevV) > 0.1) | (fabs(DevC - 1) > 0.1))
   {
     printf("Test failed!!!\n");
     return -1;
@@ -182,7 +182,7 @@ int main(void)
                        IVCCapacitor.Voltages, IVCCapacitor.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
   printf("Score = [ %.2f, %.2f ], should be [2.0, 0.17]\n", (float)DevV, (float)DevC);
-  if ((fabs(DevV - 2.0) > 0.1) | (fabs(DevC - 0.17) > 0.1))
+  if ((fabs(DevV - 2.0) > 0.2) | (fabs(DevC - 0.17) > 0.2))
   {
     printf("Test failed!!!\n");
     return -1;
@@ -193,7 +193,7 @@ int main(void)
                        IVCResistor3.Voltages, IVCResistor3.Currents, num_points_for_r_3,
                        &DevV, &DevC);
   printf("Score = [ %.2f, %.2f ], should be [0.54, 0.11]\n", (float)DevV, (float)DevC);
-  if ((fabs(DevV - 0.54) > 0.1) | (fabs(DevC - 0.11) > 0.1))
+  if ((fabs(DevV - 0.54) > 0.2) | (fabs(DevC - 0.11) > 0.2))
   {
     printf("Test failed!!!\n");
     return -1;

@@ -71,7 +71,7 @@ class TestStringMethods(unittest.TestCase):
             self.IVCCapacitor.voltages[i] = VOLTAGE_AMPL * np.sin(2 * np.pi * i / self.IVCCapacitor.length)
             self.IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / self.IVCCapacitor.length)
         resV, resC = ComputeMaxDeviations(self.IVCResistor1, self.IVCCapacitor)
-        self.assertTrue(((resV - 1.98) < 0.05) and ((resC - 0.36) < 0.05))
+        self.assertTrue(((resV - 1.98) < 0.05) and ((resC - 0.66) < 0.05))
 
 
 if __name__ == "__main__":
