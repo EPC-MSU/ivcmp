@@ -651,9 +651,6 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   fclose(DebugOutFile);
 #endif
 
-  SubtractVar(a_[0], Mean(a_[0], CurveLengthA), a_[0], CurveLengthA);
-  SubtractVar(a_[1], Mean(a_[1], CurveLengthA), a_[1], CurveLengthA);
-
   for (i = 0; i < CurveLengthA; i++)
   { 
     a_[0][i] = a_[0][i] / VarV;
@@ -724,9 +721,6 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   }
   else
   {
-    SubtractVar(b_[0], Mean(b_[0], CurveLengthB), b_[0], CurveLengthB);
-    SubtractVar(b_[1], Mean(b_[1], CurveLengthB), b_[1], CurveLengthB);
-
     for (i = 0; i < CurveLengthB; i++)
     {
       b_[0][i] = b_[0][i] / VarV;
