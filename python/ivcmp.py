@@ -74,15 +74,19 @@ def CompareIvc(first_iv_curve, second_iv_curve):
 
 
 if __name__ == "__main__":
-    iv_curve = IvCurve()
-    ivc_curve = IvCurve()
+    iv_curve_1 = IvCurve()
+    iv_curve_1.length = MAX_NUM_POINTS
+    iv_curve_2 = IvCurve()
+    iv_curve_2.length = MAX_NUM_POINTS
     for i in range(MAX_NUM_POINTS):
-        iv_curve.voltages[i] = 0.47 * VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
-        iv_curve.currents[i] = 0.63 * CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
-        ivc_curve.voltages[i] = VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
-        ivc_curve.currents[i] = CURRENT_AMPL * np.cos(2 * 3.14 * i / MAX_NUM_POINTS)
-    SetMinVC(0, 0)
-    f = CompareIvc(iv_curve, ivc_curve)
-    print(f)
-    # for i in range(MAX_NUM_POINTS):
-    #     print(iv_curve.currents[i], iv_curve.voltages[i])
+        iv_curve_1.voltages[i] = 1.2 * VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
+        iv_curve_1.currents[i] = 0.8 * CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
+        iv_curve_2.voltages[i] = VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
+        iv_curve_2.currents[i] = CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
+
+    # Set cureves scale
+    SetMinVC(0.5, 0.5)
+    
+    score = CompareIvc(iv_curve_1, iv_curve_2)
+    print("Score: {:.2f}".format(score))
+
