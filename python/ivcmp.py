@@ -85,8 +85,7 @@ if __name__ == "__main__":
         iv_curve_2.currents[i] = CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
 
     # Set cureves scale
-    SetMinVC(0.5, 0.5)
-    
+    SetMinVC(0.1, 0.1)
+
     score = CompareIvc(iv_curve_1, iv_curve_2)
     print("Score: {:.2f}".format(score))
-
