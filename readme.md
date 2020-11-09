@@ -4,9 +4,10 @@
 
 ## Инструкция для Linux
 
-###1. Установка cmake
+###1. Установка зависимостей
 ```
 sudo apt install cmake
+sudo apt-get install g++
 ```
 
 
