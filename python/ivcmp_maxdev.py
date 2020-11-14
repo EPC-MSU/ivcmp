@@ -9,7 +9,7 @@ CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
 
 def _get_dll():
     if system() == "Linux":
-        return CDLL("libivcmp.so")
+        return CDLL("libivcmp_maxdev.so")
     elif system() == "Windows":
         return CDLL("ivcmp_maxdev.dll")
     else:

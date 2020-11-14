@@ -57,6 +57,34 @@ static uint32_t RemoveRepeats(double *V, double *C, uint32_t SizeJ)
 }
 
 /**
+ * Returns maximum element from two curves.
+ * 
+ * @param[in] a1 first curve
+ * @param[in] a1size length of the first curve
+ * @param[in] a2 second curve
+ * @param[in] a2size length of the second curve
+ * 
+ * @param[out] maxval maximum value of two curves
+ * 
+ **/
+static double MaxDuo(double *a1, uint32_t a1size, double *a2, uint32_t a2size)
+{
+    uint32_t i;
+    double maxval = 0;
+
+    for (i = 0; i < a1size; i++)
+    {
+        if (Abs(a1[i]) > maxval) {maxval = Abs(a1[i]);}
+    }
+    for (i = 0; i < a2size; i++)
+    {
+        if(Abs(a2[i]) > maxval) {maxval = Abs(a2[i]);}
+    }
+
+    return maxval;
+}
+
+/**
  * Calculates the voltage and current distances between a point and a segment
  * 
  * @param[in] x0,y0 coords of the point
@@ -129,10 +157,15 @@ static void DistCurvePts(double *CurveV, double *CurveC, uint32_t SizeCurve, dou
     uint32_t i, j;
     double dist, distV, distC;
     double DistMin, DistMinV, DistMinC;
+    double maxV, maxC;
     distV = 0.0;
     distC = 0.0;
     **DistMaxV = 0.0;
     **DistMaxC = 0.0;
+
+    maxV = MaxDuo(CurveV, SizeCurve, ptsV, Sizepts);
+    maxC = MaxDuo(CurveC, SizeCurve, ptsC, Sizepts);
+    printf("maxV %.2f maxC %.2f\n", (float)maxV, (float)maxC);
 
     for (i = 0; i < SizeCurve; i++)
     {
@@ -140,8 +173,9 @@ static void DistCurvePts(double *CurveV, double *CurveC, uint32_t SizeCurve, dou
         DistMinV = 100000;
         DistMinC = 100000;
         for (j = 0; j < Sizepts - 1; j++)
-        {
-            Dist2PtSeg(CurveV[i], CurveC[i], ptsV[j], ptsC[j], ptsV[j+1], ptsC[j+1], &distV, &distC);
+        {   
+
+            Dist2PtSeg(CurveV[i] / maxV, CurveC[i] / maxC, ptsV[j] / maxV, ptsC[j] / maxC, ptsV[j+1] / maxV, ptsC[j+1] / maxC, &distV, &distC);
             dist = distV * distV + distC * distC;
             if (dist < DistMin)
             {
@@ -158,7 +192,10 @@ static void DistCurvePts(double *CurveV, double *CurveC, uint32_t SizeCurve, dou
         {
             **DistMaxC = DistMinC;
         }
+
     }
+    **DistMaxV = **DistMaxV * maxV;
+    **DistMaxC = **DistMaxC * maxC;
 }
 
 /**
@@ -181,7 +218,7 @@ static void SetNorm(double *VoltagesRef, double *normV, double *CurrentsRef, dou
 {
     uint32_t i;
 
-    for (i=0; i < CurveLengthRef; i++)
+    for (i = 0; i < CurveLengthRef; i++)
     {
         if (*normV < Abs(VoltagesRef[i])) {*normV = Abs(VoltagesRef[i]);}
         if (*normC < Abs(CurrentsRef[i])) {*normC = Abs(CurrentsRef[i]);}
@@ -218,7 +255,7 @@ void ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t Cur
         *ScoreC = SCORE_ERROR;
         return;
     }
-    
+
     SetNorm(VoltagesRef, &normV, CurrentsRef, &normC, CurveLengthRef);
 
     uint32_t SizeRef = RemoveRepeats(VoltagesRef, CurrentsRef, CurveLengthRef);
