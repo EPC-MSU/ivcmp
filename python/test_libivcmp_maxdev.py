@@ -47,7 +47,7 @@ class TestStringMethods(unittest.TestCase):
             self.IVCResistor2.voltages[i] = c_double(0.47 * VOLTAGE_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS))
             self.IVCResistor2.currents[i] = c_double(0.63 * CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS))
         resV, resC = ComputeMaxDeviations(self.IVCResistor1, self.IVCResistor2)
-        self.assertTrue(((resV - 0.22) < 0.05) and ((resC - 0.04) < 0.05))
+        self.assertTrue(((resV - 0.14) < 0.03) and ((resC - 0.16) < 0.03))
 
     def test_number_five(self):
         self.IVCResistor1 = IvCurve()
@@ -58,7 +58,7 @@ class TestStringMethods(unittest.TestCase):
             self.IVCCapacitor.voltages[i] = VOLTAGE_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
             self.IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / MAX_NUM_POINTS)
         resV, resC = ComputeMaxDeviations(self.IVCResistor1, self.IVCCapacitor)
-        self.assertTrue(((resV - 1.98) < 0.05) and ((resC - 0.15) < 0.05))
+        self.assertTrue(((resV - 1.98) < 0.05) and ((resC - 1.98) < 0.05))
 
     def test_number_six(self):
         self.IVCResistor1 = IvCurve()
@@ -71,7 +71,7 @@ class TestStringMethods(unittest.TestCase):
             self.IVCCapacitor.voltages[i] = VOLTAGE_AMPL * np.sin(2 * np.pi * i / self.IVCCapacitor.length)
             self.IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / self.IVCCapacitor.length)
         resV, resC = ComputeMaxDeviations(self.IVCResistor1, self.IVCCapacitor)
-        self.assertTrue(((resV - 1.98) < 0.05) and ((resC - 0.66) < 0.05))
+        self.assertTrue(((resV - 1.74) < 0.05) and ((resC - 1.78) < 0.05))
 
 
 if __name__ == "__main__":

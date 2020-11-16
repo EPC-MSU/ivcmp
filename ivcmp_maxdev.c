@@ -165,7 +165,6 @@ static void DistCurvePts(double *CurveV, double *CurveC, uint32_t SizeCurve, dou
 
     maxV = MaxDuo(CurveV, SizeCurve, ptsV, Sizepts);
     maxC = MaxDuo(CurveC, SizeCurve, ptsC, Sizepts);
-    printf("maxV %.2f maxC %.2f\n", (float)maxV, (float)maxC);
 
     for (i = 0; i < SizeCurve; i++)
     {
