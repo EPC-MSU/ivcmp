@@ -170,7 +170,7 @@ int main(void)
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCResistor2.Voltages, IVCResistor2.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ], should be [0.24, 0.06]\n", (float)DevV, (float)DevC);
+  printf("Score = [ %.2f, %.2f ], should be [0.2, 0.15]\n", (float)DevV, (float)DevC);
   if ((fabs(DevV - 0.2) > 0.1) | (fabs(DevC - 0.15) > 0.1))
   {
     printf("Test failed!!!\n");
@@ -181,7 +181,7 @@ int main(void)
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCCapacitor.Voltages, IVCCapacitor.Currents, MAX_NUM_POINTS,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ], should be [2.0, 0.17]\n", (float)DevV, (float)DevC);
+  printf("Score = [ %.2f, %.2f ], should be [1.9, 2.0]\n", (float)DevV, (float)DevC);
   if ((fabs(DevV - 1.9) > 0.2) | (fabs(DevC - 2.0) > 0.2))
   {
     printf("Test failed!!!\n");
@@ -192,7 +192,7 @@ int main(void)
   ComputeMaxDeviations(IVCResistor1.Voltages, IVCResistor1.Currents, MAX_NUM_POINTS,
                        IVCResistor3.Voltages, IVCResistor3.Currents, num_points_for_r_3,
                        &DevV, &DevC);
-  printf("Score = [ %.2f, %.2f ], should be [0.54, 0.11]\n", (float)DevV, (float)DevC);
+  printf("Score = [ %.2f, %.2f ], should be [0.4, 0.35]\n", (float)DevV, (float)DevC);
   if ((fabs(DevV - 0.4) > 0.2) | (fabs(DevC - 0.35) > 0.2))
   {
     printf("Test failed!!!\n");

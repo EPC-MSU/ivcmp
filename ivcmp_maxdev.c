@@ -9,8 +9,8 @@
 #include "ivcmp_maxdev.h"
 
 #define SCORE_ERROR -1.
-#define MIN_NORM_V 0.6
-#define MIN_NORM_C 0.0002
+#define MIN_NORM_V 0.1
+#define MIN_NORM_C 0.00005
 #define MIN_LEN_CURVE 2
 
 #if defined(linux)
