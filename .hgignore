@@ -1,0 +1,3 @@
+syntax: glob
+build/*
+python/__pycache__/*
