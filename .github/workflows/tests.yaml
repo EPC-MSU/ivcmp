@@ -24,6 +24,7 @@ jobs:
         run: |
           cmake CMakeLists.txt
           make
-          cp libivcmp.so /usr/
       - name: Run tests
-        run: python -m unittest discover tests
+        run: |
+          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
+          python -m unittest discover tests

@@ -26,7 +26,7 @@ class _IterableStructure(Structure):
 
 
 def _normalize_arg(value, desired_ctype):
-    from collections import Sequence
+    from collections.abc import Sequence
 
     if isinstance(value, desired_ctype):
         return value
