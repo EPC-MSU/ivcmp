@@ -26,6 +26,7 @@ class TestStringMethods(unittest.TestCase):
                 iv_data = json.load(f)
             with open(filename_2) as f:
                 ivc_data = json.load(f)
+            score = None
             try:
                 n_points = np.min([len(iv_data["elements"][0]["pins"][0]["ivc"]["voltage"]),
                                    len(ivc_data["elements"][0]["pins"][0]["ivc"]["voltage"])])
@@ -37,10 +38,11 @@ class TestStringMethods(unittest.TestCase):
                 ivc_curve.currents[:n_points] = ivc_data["elements"][0]["pins"][0]["ivc"]["current"][:n_points]
                 score = ivcmp.CompareIvc(iv_curve, ivc_curve)
                 assert (0 <= score <= 1.)
+            # TODO: refactor
             except AssertionError:
                 count += 1
                 print("AssertionError: comp_1: {}, comp_2: {}"
-                      "score - {}".format(i, ind_1, ind_2, score))
+                      "score - {}".format(ind_1, ind_2, score))
             except Exception as e:
                 print("ERROR in elements ({}).json: {}".format(i, e))
         print("There is {} errors of 20 random comparing".format(count))

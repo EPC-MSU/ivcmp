@@ -1,0 +1,28 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+      - 'dev-**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Install dependencies
+        run: |
+          python -m pip install -r python/requirements-dev.txt
+          python -m pip install --upgrade pip
+      - name: Build library
+        run: |
+          cmake CMakeLists.txt
+          make
+          cp libivcmp.so /usr/
+      - name: Run tests
+        run: python -m unittest discover tests
