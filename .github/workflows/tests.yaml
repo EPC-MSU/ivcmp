@@ -17,8 +17,9 @@ jobs:
           python-version: 3.6
       - name: Install dependencies
         run: |
-          python -m pip install -r python/requirements-dev.txt
           python -m pip install --upgrade pip
+          python -m pip install -r pyivcmp/requirements.txt
+          python -m pip install -r pyivcmp/requirements-dev.txt
       - name: Build library
         run: |
           cmake CMakeLists.txt
