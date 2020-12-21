@@ -1,7 +1,7 @@
 # This module tests libicvmp_maxdev and checks if binding works correctly
 from __future__ import print_function
 import unittest
-from ivcmp_maxdev import IvCurve, ComputeMaxDeviations, MAX_NUM_POINTS, VOLTAGE_AMPL, CURRENT_AMPL
+from ivcmp import IvCurve, ComputeMaxDeviations, MAX_NUM_POINTS, VOLTAGE_AMPL, CURRENT_AMPL
 from ctypes import c_double
 import numpy as np
 

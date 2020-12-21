@@ -55,6 +55,25 @@ EXPORT void CCONV SetMinVC(double NewMinV, double NewMinC);
  */
 EXPORT double CCONV CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
                                double *VoltagesB, double *CurrentsB, uint32_t CurveLengthB);
+
+/**
+* Функция для определения максимальных отклонений двух кривых (ВАХ).
+* Рассчитывает максимальные расстояния между пробной кривой и тестовой,
+* затем нормализует по максимуму пробной кривой.
+* Массивы токов и напряжений должны иметь одинаковые длины и содержать по
+* одному периоду пробного сигнала.
+* @param[in] VoltagesA Массив напряжений пробной кривой для сравнения [Вольты]
+* @param[in] CurrentsA Массив токов пробной кривой для сравнения [мА]
+* @param[in] VoltagesB Массив напряжений тестовой кривой для сравнения [Вольты]
+* @param[in] CurrentsB Массив токов тестовой кривой для сравнения [мА]
+* @param[in] CurveLength Kоличество точек кривой
+* @param ScoreV Максимальное отклонение по напряжениям
+* @param ScoreC Максимальное отнлонение по токам
+*/
+EXPORT void CCONV ComputeMaxDeviations(double *VoltagesRef, double *CurrentsRef, uint32_t CurveLengthRef,
+	double *VoltagesTest, double *CurrentsTest, uint32_t CurveLengthTest,
+	double *ScoreV, double *ScoreC);
+
 #ifdef __cplusplus
 }
 #endif

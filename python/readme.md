@@ -14,4 +14,4 @@
     Запустить в этой же консоли:
     python3 libivcmp.py
 
-    Аналогично для test_libivcmp.py
+    Аналогично для test_libivcmp.py и test_libivcmp_maxdev.py

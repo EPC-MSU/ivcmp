@@ -2,7 +2,6 @@
 #define _USE_MATH_DEFINES
 #include "math.h"
 #include "ivcmp.h"
-#include "ivcmp_maxdev.h"
 
 #define MAX_NUM_POINTS 50
 

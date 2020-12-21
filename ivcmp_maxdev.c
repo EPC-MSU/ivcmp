@@ -6,7 +6,7 @@
 #include <string.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include "ivcmp_maxdev.h"
+#include "ivcmp.h"
 
 #define SCORE_ERROR -1.
 #define MIN_NORM_V 0.1
