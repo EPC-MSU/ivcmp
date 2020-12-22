@@ -532,8 +532,8 @@ void SetMinVC(double NewMinV, double NewMinC)
   }
   else
   {
-    printf("IVCMP: Incorrect MinVarV, MinVarC setup. Got %lf, %lf. Should be > 0.\n",
-           MinVarV, MinVarC);
+    MinVarV = MIN_VAR_V_DEFAULT;
+    MinVarC = MIN_VAR_C_DEFAULT;
   }
 }
 
@@ -542,34 +542,18 @@ void SetMinVC(double NewMinV, double NewMinC)
  * 
  * @param[in] VoltagesA voltages of the first curve
  * @param[in] CurrentsA currents of the first curve
- * @param[in] CurveLengthA number of points in the curves
  * @param[in] VoltagesB voltages of the second curve
  * @param[in] CurrentsB currents of the second curve
- * @param[in] CurveLengthB number of points in the curves
+ * @param[in] CurveLength number of points in the curves
  * 
  * @return score of difference between the curves; 1.0 for completely different curves, 0.0 for same curves
  */
 double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
-                  double *VoltagesB, double *CurrentsB, uint32_t CurveLengthB)
+                  double *VoltagesB, double *CurrentsB, uint32_t  CurveLengthB)
 {
   uint32_t i;
   double VarV, VarC;
   double Score;
-
-  /* Check parameters */
-  if (CurveLengthA <= MIN_LEN_CURVE || CurveLengthB <= MIN_LEN_CURVE)
-  {
-    return SCORE_ERROR;
-  }
-
-  if (MinVarC <= 0 || MinVarV <= 0)
-  {
-    /*
-     * Min variance should be at least several times larger than noise dispersion.
-     * Optimal value – possible curve size.
-     */
-    return SCORE_ERROR;
-  }
 
 #ifdef DEBUG_FILE_OUTPUT
   FILE *DebugOutFile;

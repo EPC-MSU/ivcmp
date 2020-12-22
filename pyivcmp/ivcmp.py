@@ -1,5 +1,5 @@
 from ctypes import CDLL, Structure, Array, c_ubyte, \
-    c_double, c_size_t, POINTER
+    c_double, c_size_t, POINTER, byref
 from platform import system
 import numpy as np
 VOLTAGE_AMPL = 12.
@@ -26,7 +26,7 @@ class _IterableStructure(Structure):
 
 
 def _normalize_arg(value, desired_ctype):
-    from collections.abc import Sequence
+    from collections import Sequence
 
     if isinstance(value, desired_ctype):
         return value
@@ -72,20 +72,32 @@ def CompareIvc(first_iv_curve, second_iv_curve):
     res = _normalize_arg(res, c_double)
     return res
 
+def ComputeMaxDeviations(first_iv_curve, second_iv_curve):
+    dev_v, dev_c = c_double(0.0), c_double(0.0)
+    lib_func = lib.ComputeMaxDeviations
+    lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double),\
+        POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double)
+    lib_func.restype = None
+    lib_func(first_iv_curve.voltages, first_iv_curve.currents, first_iv_curve.length,
+                   second_iv_curve.voltages, second_iv_curve.currents, second_iv_curve.length,
+                   byref(dev_v), byref(dev_c))
+    dev_v = _normalize_arg(dev_v, c_double)
+    dev_c = _normalize_arg(dev_c, c_double)
+    return dev_v.value, dev_c.value
+
 
 if __name__ == "__main__":
-    iv_curve_1 = IvCurve()
-    iv_curve_1.length = MAX_NUM_POINTS
-    iv_curve_2 = IvCurve()
-    iv_curve_2.length = MAX_NUM_POINTS
+    iv_curve = IvCurve()
+    ivc_curve = IvCurve()
     for i in range(MAX_NUM_POINTS):
-        iv_curve_1.voltages[i] = 1.2 * VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
-        iv_curve_1.currents[i] = 0.8 * CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
-        iv_curve_2.voltages[i] = VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
-        iv_curve_2.currents[i] = CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
-
-    # Set cureves scale
-    SetMinVC(0.1, 0.1)
-
-    score = CompareIvc(iv_curve_1, iv_curve_2)
-    print("Score: {:.2f}".format(score))
+        iv_curve.voltages[i] = 0.47 * VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
+        iv_curve.currents[i] = 0.63 * CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
+        ivc_curve.voltages[i] = VOLTAGE_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
+        ivc_curve.currents[i] = CURRENT_AMPL * np.cos(2 * 3.14 * i / MAX_NUM_POINTS)
+    SetMinVC(0, 0)
+    f = CompareIvc(iv_curve, ivc_curve)
+    print("Score for CompareIvc: {}".format(f))
+    dev_v, dev_c = ComputeMaxDeviations(iv_curve, ivc_curve)
+    print("Scores for ComputeMaxDeviations:{}, {}".format(dev_v, dev_c))
+    # for i in range(MAX_NUM_POINTS):
+    #     print(iv_curve.currents[i], iv_curve.voltages[i])
