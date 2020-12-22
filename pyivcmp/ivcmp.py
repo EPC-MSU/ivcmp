@@ -72,6 +72,7 @@ def CompareIvc(first_iv_curve, second_iv_curve):
     res = _normalize_arg(res, c_double)
     return res
 
+
 def ComputeMaxDeviations(first_iv_curve, second_iv_curve):
     dev_v, dev_c = c_double(0.0), c_double(0.0)
     lib_func = lib.ComputeMaxDeviations
@@ -79,8 +80,8 @@ def ComputeMaxDeviations(first_iv_curve, second_iv_curve):
         POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double)
     lib_func.restype = None
     lib_func(first_iv_curve.voltages, first_iv_curve.currents, first_iv_curve.length,
-                   second_iv_curve.voltages, second_iv_curve.currents, second_iv_curve.length,
-                   byref(dev_v), byref(dev_c))
+             second_iv_curve.voltages, second_iv_curve.currents, second_iv_curve.length,
+             byref(dev_v), byref(dev_c))
     dev_v = _normalize_arg(dev_v, c_double)
     dev_c = _normalize_arg(dev_c, c_double)
     return dev_v.value, dev_c.value
