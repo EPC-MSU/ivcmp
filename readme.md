@@ -2,7 +2,7 @@
 
 [![Static Analysis Status](https://github.com/epc-msu/ivcmp/workflows/static-analysis/badge.svg)](https://github.com/epc-msu/ivcmp/actions?workflow=static-analysis)
 [![Testing Status](https://github.com/epc-msu/ivcmp/workflows/testing/badge.svg)](https://github.com/epc-msu/ivcmp/actions?workflow=testing)
-![Coverage Badge](https://gist.githubusercontent.com/mihalin/b0ac32a32f4c12abc822ba5b31882f3f/raw/coverage-badge.svg)
+![Coverage Badge](https://gist.githubusercontent.com/mihalin/b0ac32a32f4c12abc822ba5b31882f3f/raw/ivcmp-coverage-badge.svg)
 
 Библиотека для сравнения кривых ВАХ. 
 
