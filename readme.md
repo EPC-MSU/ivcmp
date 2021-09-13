@@ -1,6 +1,7 @@
 # libivcmp
 
 ![Coverage Badge](https://gist.githubusercontent.com/mihalin/b0ac32a32f4c12abc822ba5b31882f3f/raw/coverage-badge.svg)
+[![Static Analysis Status](https://github.com/epc-msu/ivcmp/workflows/Linter/badge.svg)](https://github.com/epc-msu/ivcmp/actions?workflow=Linter)
 
 Библиотека для сравнения кривых ВАХ. 
 
