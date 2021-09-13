@@ -30,7 +30,15 @@ jobs:
       - name: Run tests
         run: |
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
-          python -m unittest discover tests
+          python -m pytest pyivcmp --cov=pyivcmp --cov-report=xml
+          genbadge coverage -i coverage.xml
+      - name: Put badge
+        uses: exuanbo/actions-deploy-gist@v1
+        with:
+          token: ${{ secrets.GIST_SECRET }}
+          gist_id: b0ac32a32f4c12abc822ba5b31882f3f
+          gist_file_name: coverage-badge.svg
+          file_path: coverage-badge.svg
       - name: Create the Badge
         uses: schneegans/dynamic-badges-action@v1.0.0
         with:
