@@ -1,5 +1,7 @@
 # libivcmp
 
+[![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mihalin/b0ac32a32f4c12abc822ba5b31882f3f/raw/ivcmp__heads_main.json)]
+
 Библиотека для сравнения кривых ВАХ. 
 
 ## Инструкция для Linux

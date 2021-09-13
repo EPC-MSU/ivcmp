@@ -28,3 +28,13 @@ jobs:
         run: |
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
           python -m unittest discover tests
+      - name: Create the Badge
+        uses: schneegans/dynamic-badges-action@v1.0.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: b0ac32a32f4c12abc822ba5b31882f3f
+          filename: ivcmp__${{ env.BRANCH }}.json
+          label: Test Coverage
+          message: 42
+          color: green
+          namedLogo: jest
