@@ -30,7 +30,7 @@ jobs:
       - name: Run tests
         run: |
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
-          python -m pytest pyivcmp --cov=pyivcmp --cov-report=xml
+          python -m pytest pyivcmp
           genbadge coverage -i coverage.xml
       - name: Put badge
         uses: exuanbo/actions-deploy-gist@v1
