@@ -1,5 +1,4 @@
 #include "stdio.h"
-#include "stdlib.h"
 #define _USE_MATH_DEFINES
 #include "math.h"
 #include "ivcmp.h"
@@ -33,10 +32,10 @@ int main(void)
   {
     /* IVC of breaks */
     IVCOpenCircuit.Voltages[i] = VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength);
-    IVCOpenCircuit.Currents[i] = (float)(rand() % 200 - 100) / 100;
+    IVCOpenCircuit.Currents[i] = 0;
 
     /* IVC of SC */
-	IVCShortCircuit.Voltages[i] = (float)(rand() % 200 - 100) / 100;
+    IVCShortCircuit.Voltages[i] = 0;
     IVCShortCircuit.Currents[i] = CURRENT_AMPL * sin(2 * M_PI * i / CurveLength);
 
     /* IVC of resistor 1 */
