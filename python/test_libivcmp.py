@@ -1,13 +1,13 @@
 # This module test libivcmp work and check correct work of binding
 from __future__ import print_function
 import unittest
-from ivcmp import IvCurve, CompareIvc, MAX_NUM_POINTS, SetMinVC, VOLTAGE_AMPL, CURRENT_AMPL
+from ivcmp import IvCurve, CompareIvc, MAX_NUM_POINTS, SetMinVC, GetMinVC, SetMinVCFromCurves, \
+                  VOLTAGE_AMPL, CURRENT_AMPL
 from ctypes import c_double
 import numpy as np
 
 
-class TestStringMethods(unittest.TestCase):
-
+class TestIVCMPMethods(unittest.TestCase):
     def test_number_one(self):
         self.IVCResistor1 = IvCurve()
         self.IVCResistor1.length = MAX_NUM_POINTS
@@ -92,6 +92,44 @@ class TestStringMethods(unittest.TestCase):
         res2 = CompareIvc(self.IVCResistor1, self.IVCCapacitor)
         self.assertTrue((res1 - res2) < 0.05)
         self.assertTrue(res1 > 0)
+
+    def test_error_message(self):
+        # An error will be printed to stdout
+        # and it is not easy to get it here
+        SetMinVC(0, 0)
+
+    def test_get_min_var(self):
+        # An error will be printed to stdout
+        # and it is not easy to get it here
+        test_var_v = 1.23
+        test_var_c = 4.56
+        SetMinVC(test_var_v, test_var_c)
+
+        test_var_v_out, test_var_c_out = GetMinVC()
+
+        self.assertTrue((test_var_v_out - test_var_v) < 0.000001)
+        self.assertTrue((test_var_c_out - test_var_c) < 0.000001)
+
+    def test_set_minvc_from_curves(self):
+        NUM_POINTS = 100
+        sigma = 0.05
+        curve_oc = IvCurve()
+        curve_oc.length = NUM_POINTS
+        curve_sc = IvCurve()
+        curve_sc.length = NUM_POINTS
+        noise_v = sigma * np.random.normal(size=NUM_POINTS)
+        noise_i = sigma * np.random.normal(size=NUM_POINTS)
+
+        for i in range(NUM_POINTS):
+            curve_oc.voltages[i] = np.sin(2 * np.pi * i / NUM_POINTS) + noise_v[i]
+            curve_oc.currents[i] = noise_i[i]
+
+            curve_sc.voltages[i] = noise_v[i]
+            curve_sc.currents[i] = np.sin(2 * np.pi * i / NUM_POINTS) + noise_i[i]
+
+        SetMinVCFromCurves(curve_oc, curve_sc)
+        res = CompareIvc(curve_sc, curve_sc)
+        self.assertTrue((res - 0) < 0.05)
 
 
 if __name__ == "__main__":

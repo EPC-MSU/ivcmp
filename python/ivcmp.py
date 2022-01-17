@@ -1,5 +1,4 @@
-from ctypes import CDLL, Structure, Array, c_ubyte, \
-    c_double, c_size_t, POINTER
+from ctypes import CDLL, Structure, Array, c_ubyte, c_double, c_size_t, POINTER, pointer
 from platform import system
 import numpy as np
 VOLTAGE_AMPL = 12.
@@ -63,6 +62,27 @@ def SetMinVC(min_var_v, min_var_c):
     lib_func(c_double(min_var_v),  c_double(min_var_c))
 
 
+def SetMinVCFromCurves(open_circuit_iv_curve, short_circuit_iv_curve):
+    lib_func = lib.SetMinVCFromCurves
+    lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
+    lib_func.restype = c_double
+    res = lib_func(open_circuit_iv_curve.voltages, open_circuit_iv_curve.currents, open_circuit_iv_curve.length,
+                   short_circuit_iv_curve.voltages, short_circuit_iv_curve.currents, short_circuit_iv_curve.length)
+    res = _normalize_arg(res, c_double)
+    return res
+
+
+def GetMinVC():
+    min_var_v = c_double()
+    min_var_c = c_double()
+
+    lib_func = lib.GetMinVC
+    lib_func.argtype = POINTER(c_double), POINTER(c_double)
+
+    lib_func(pointer(min_var_v), pointer(min_var_c))
+    return min_var_v.value, min_var_c.value
+
+
 def CompareIvc(first_iv_curve, second_iv_curve):
     lib_func = lib.CompareIVC
     lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
@@ -85,8 +105,8 @@ if __name__ == "__main__":
         iv_curve_2.currents[i] = CURRENT_AMPL * np.sin(2 * 3.14 * i / MAX_NUM_POINTS)
 
     # Set cureves scale
-    SetMinVC(0.5, 0.5)
-    
+    SetMinVC(0.1, 0.1)
+
     score = CompareIvc(iv_curve_1, iv_curve_2)
     print("Score: {:.2f}".format(score))
 

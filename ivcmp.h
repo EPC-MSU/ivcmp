@@ -65,6 +65,14 @@ EXPORT void CCONV SetMinVCFromCurves(double *VoltagesOpenC, double *CurrentsOpen
                                      double *VoltagesShortC, double *CurrentsShortC, uint32_t CurveLengthShotC);
 
 /**
+ * Функция для получения текущих значений характерных масштабов измерений.
+ *
+ * @param[out] NewMinVPtr - указатель, по которому будет записан характерный масштаб по напряжению. Единицы измерения: Вольты.
+ * @param[out] NewMinCPtr - указатель, по которому будет записан характерный масштаб по напряжению. Единицы измерения: Вольты.
+ */
+EXPORT void CCONV GetMinVC(double *NewMinVPtr, double *NewMinCPtr);
+
+/**
  * Функция для сравнения двух кривых (ВАХ).
  * Возвращает степень различия в диапазоне [0, 1]
  * (0 - кривые совпадают, 1  - кривые совсем разные).

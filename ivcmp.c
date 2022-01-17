@@ -514,11 +514,11 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 
 
 /*********************************/
-/*    Public functions     */
+/*    Public functions           */
 /*********************************/
 
 /**
- * Sets noise for voltages and currents
+ * Sets scaling threshold for voltages and currents
  * 
  * @param NewMinV new voltage noise
  * @param NewMinC new current noise
@@ -536,6 +536,50 @@ void SetMinVC(double NewMinV, double NewMinC)
            MinVarV, MinVarC);
   }
 }
+
+
+/**
+ * Sets scaling threshold for voltages and currents
+ * by noise evaluation for short circuit and open circuit curves.
+ * 
+ * @param VoltagesOpenC Array of voltages for open circuit curve
+ * @param CurrentsOpenC Array of currents for open circuit curve
+ * @param CurveLengthOpenC Number of points in open circuit curve
+ * @param VoltagesShortC Array of voltages for short circuit curve
+ * @param CurrentsShortC Array of currents for short circuit curve
+ * @param CurveLengthShotC Number of points in short circuit curve
+ */
+void SetMinVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_t CurveLengthOpenC,
+                        double *VoltagesShortC, double *CurrentsShortC, uint32_t CurveLengthShotC)
+{
+  /*
+   * Scaling threshold should be n * sigma.
+   * Sigma - standard deviation of noise.
+   * Open circuit - no current, so we can evaluate current noise.
+   * Short circuit - no voltage drop, so we can evaluate voltage noise.
+   */
+  const float SigmaFactor = 3.0;
+  MinVarV = SigmaFactor * sqrt(Disp(VoltagesShortC, CurveLengthShotC));
+  MinVarC = SigmaFactor * sqrt(Disp(CurrentsOpenC, CurveLengthOpenC));
+
+  /* To avoid warnings for unused params, but save standard interface */
+  (void)(VoltagesOpenC);
+  (void)(CurrentsShortC);
+}
+
+
+/**
+ * Gets active scaling threshold for voltages and currents
+ *
+ * @param NewMinVPtr - variable pointer to store voltage variation.
+ * @param NewMinCPtr - variable pointer to store current variation.
+ */
+void GetMinVC(double *NewMinVPtr, double *NewMinCPtr)
+{
+	*NewMinVPtr = MinVarV;
+	*NewMinCPtr = MinVarC;
+}
+
 
 /**
  * Compares two curves
@@ -566,7 +610,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   {
     /*
      * Min variance should be at least several times larger than noise dispersion.
-     * Optimal value – possible curve size.
+     * Optimal value - possible curve size.
      */
     return SCORE_ERROR;
   }
