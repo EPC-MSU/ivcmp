@@ -4,9 +4,11 @@
 
 ## Инструкция для Linux
 
-###1. Установка libcurl, cmake
+###1. Установка cmake
+```
+sudo apt install cmake
+```
 
-Для сборки\установки под Linux понадобится CMake и CURL. Если они не установлены, смотрите инструкцию по установке в папке md_asa_lib-src/deps/linux
 
 ### 2. Сборка и установка
 
@@ -41,7 +43,7 @@ make
 
 Под Windows для генерации файлов проектом удобно использовать CMake Gui https://cmake.org/download/
 
-* В CMake Gui в поле "Where is the source code" указать полный путь до папки проекта md_asa_lib
+* В CMake Gui в поле "Where is the source code" указать полный путь до папки проекта ivcmp
 
 * В CMake Gui в поле  "Where to build binaries" указать полный путь до каталога, куда положить сборку. Например, это может быть папка build в каталоге проекта
 

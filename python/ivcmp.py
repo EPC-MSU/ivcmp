@@ -109,4 +109,3 @@ if __name__ == "__main__":
 
     score = CompareIvc(iv_curve_1, iv_curve_2)
     print("Score: {:.2f}".format(score))
-

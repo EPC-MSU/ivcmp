@@ -7,17 +7,17 @@
 #include <math.h>
 #include "ivcmp.h"
 
-/*********************************/
-/*    Settings                   */
-/*********************************/
+/* ******************************* */
+/*    Settings                     */
+/* ******************************* */
 /* Uncomment this to save temporary results 
  * to files on intermediate steps
  */
 //#define DEBUG_FILE_OUTPUT
 
-/*********************************/
-/*    Definitions                */
-/*********************************/
+/* ******************************* */
+/*    Definitions                  */
+/* ******************************* */
 #define IV_CURVE_NUM_COMPONENTS 2
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
@@ -38,9 +38,9 @@ static double MinVarV, MinVarC;
 #endif
 
 
-/*********************************/
-/*       Internal functions      */
-/*********************************/
+/* ******************************* */
+/*       Internal functions        */
+/* ******************************* */
 
 /**
  * Returns the difference vector of two vectors
@@ -513,9 +513,9 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 }
 
 
-/*********************************/
-/*    Public functions           */
-/*********************************/
+/* ******************************* */
+/*    Public functions             */
+/* ******************************* */
 
 /**
  * Sets scaling threshold for voltages and currents
@@ -695,9 +695,6 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   fclose(DebugOutFile);
 #endif
 
-  SubtractVar(a_[0], Mean(a_[0], CurveLengthA), a_[0], CurveLengthA);
-  SubtractVar(a_[1], Mean(a_[1], CurveLengthA), a_[1], CurveLengthA);
-
   for (i = 0; i < CurveLengthA; i++)
   { 
     a_[0][i] = a_[0][i] / VarV;
@@ -768,9 +765,6 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   }
   else
   {
-    SubtractVar(b_[0], Mean(b_[0], CurveLengthB), b_[0], CurveLengthB);
-    SubtractVar(b_[1], Mean(b_[1], CurveLengthB), b_[1], CurveLengthB);
-
     for (i = 0; i < CurveLengthB; i++)
     {
       b_[0][i] = b_[0][i] / VarV;
