@@ -1,7 +1,7 @@
 # This module test libivcmp work and check correct work of binding
 from __future__ import print_function
 import unittest
-from ivcmp import IvCurve, CompareIvc, MAX_NUM_POINTS, SetMinVC, GetMinVC, SetMinVCFromCurves, \
+from ivcmp import IvCurve, CompareIvc, MAX_NUM_POINTS, SetMinVarVC, GetMinVarVC, SetMinVarVCFromCurves, \
                   VOLTAGE_AMPL, CURRENT_AMPL
 from ctypes import c_double
 import numpy as np
@@ -16,7 +16,7 @@ class TestIVCMPMethods(unittest.TestCase):
             self.IVCResistor1.currents[i] = c_double(0.5 * CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS))
 
         # Set Voltage and Current scale
-        SetMinVC(0.5, 0.5)
+        SetMinVarVC(VOLTAGE_AMPL * 0.03, CURRENT_AMPL * 0.03)
 
         res = CompareIvc(self.IVCResistor1, self.IVCResistor1)
         self.assertTrue(res < 0.05)
@@ -33,7 +33,7 @@ class TestIVCMPMethods(unittest.TestCase):
             self.IVCShortCircuit.currents[i] = c_double(CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS))
 
         # Set Voltage and Current scale
-        SetMinVC(0.5, 0.5)
+        SetMinVarVC(VOLTAGE_AMPL * 0.03, CURRENT_AMPL * 0.03)
 
         res = CompareIvc(self.IVCShortCircuit, self.IVCOpenCircuit)
         self.assertTrue((res - 0.99) < 0.05)
@@ -50,7 +50,7 @@ class TestIVCMPMethods(unittest.TestCase):
             self.IVCResistor2.currents[i] = c_double(0.63 * CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS))
 
         # Set Voltage and Current scale
-        SetMinVC(0.5, 0.5)
+        SetMinVarVC(VOLTAGE_AMPL * 0.03, CURRENT_AMPL * 0.03)
 
         res = CompareIvc(self.IVCResistor1, self.IVCResistor2)
         self.assertTrue((res - 0.25) < 0.05)
@@ -67,7 +67,7 @@ class TestIVCMPMethods(unittest.TestCase):
             self.IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / MAX_NUM_POINTS)
 
         # Set Voltage and Current scale
-        SetMinVC(0.5, 0.5)
+        SetMinVarVC(VOLTAGE_AMPL * 0.03, CURRENT_AMPL * 0.03)
 
         res = CompareIvc(self.IVCResistor1, self.IVCCapacitor)
         self.assertTrue((res - 0.99) < 0.05)
@@ -86,7 +86,7 @@ class TestIVCMPMethods(unittest.TestCase):
             self.IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / self.IVCCapacitor.length)
 
         # Set Voltage and Current scale
-        SetMinVC(0.5, 0.5)
+        SetMinVarVC(VOLTAGE_AMPL * 0.03, CURRENT_AMPL * 0.03)
 
         res1 = CompareIvc(self.IVCResistor1, self.IVCCapacitor)
         res2 = CompareIvc(self.IVCResistor1, self.IVCCapacitor)
@@ -94,23 +94,29 @@ class TestIVCMPMethods(unittest.TestCase):
         self.assertTrue(res1 > 0)
 
     def test_error_message(self):
+        self.IVCResistor1 = IvCurve()
+
         # An error will be printed to stdout
         # and it is not easy to get it here
-        SetMinVC(0, 0)
+        print("VVV  The following error messages are a part of test. Don’t care.  VVV")
+        SetMinVarVC(0, 0)
+        with self.assertRaises(RuntimeError):
+            CompareIvc(self.IVCResistor1, self.IVCResistor1)
+        print("^^^ Error testing finished. In case there are any error messages below, it’s a problem. ^^^")
 
     def test_get_min_var(self):
         # An error will be printed to stdout
         # and it is not easy to get it here
         test_var_v = 1.23
         test_var_c = 4.56
-        SetMinVC(test_var_v, test_var_c)
+        SetMinVarVC(test_var_v, test_var_c)
 
-        test_var_v_out, test_var_c_out = GetMinVC()
+        test_var_v_out, test_var_c_out = GetMinVarVC()
 
         self.assertTrue((test_var_v_out - test_var_v) < 0.000001)
         self.assertTrue((test_var_c_out - test_var_c) < 0.000001)
 
-    def test_set_minvc_from_curves(self):
+    def test_set_min_var_vc_from_curves(self):
         NUM_POINTS = 100
         sigma = 0.05
         curve_oc = IvCurve()
@@ -127,7 +133,7 @@ class TestIVCMPMethods(unittest.TestCase):
             curve_sc.voltages[i] = noise_v[i]
             curve_sc.currents[i] = np.sin(2 * np.pi * i / NUM_POINTS) + noise_i[i]
 
-        SetMinVCFromCurves(curve_oc, curve_sc)
+        SetMinVarVCFromCurves(curve_oc, curve_sc)
         res = CompareIvc(curve_sc, curve_sc)
         self.assertTrue((res - 0) < 0.05)
 
