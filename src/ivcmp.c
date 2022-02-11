@@ -520,20 +520,20 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 /**
  * Sets scaling threshold for voltages and currents
  * 
- * @param NewMinV new voltage noise
- * @param NewMinC new current noise
+ * @param NewMinVarV new voltage noise
+ * @param NewMinVarC new current noise
  */
-void SetMinVC(double NewMinV, double NewMinC)
+void SetMinVarVC(double NewMinVarV, double NewMinVarC)
 {
-  if (NewMinV > 0 && NewMinC > 0)
+  if (NewMinVarV > 0 && NewMinVarC > 0)
   {
-    MinVarV = NewMinV;
-    MinVarC = NewMinC;
+    MinVarV = NewMinVarV;
+    MinVarC = NewMinVarC;
   }
   else
   {
-    printf("IVCMP: Incorrect MinVarV, MinVarC setup. Got %lf, %lf. Should be > 0.\n",
-           MinVarV, MinVarC);
+    printf("IVCMP ERROR: Incorrect MinVarV, MinVarC setup. Got %lf, %lf. Should be > 0.\n",
+		   NewMinVarV, NewMinVarC);
   }
 }
 
@@ -549,8 +549,8 @@ void SetMinVC(double NewMinV, double NewMinC)
  * @param CurrentsShortC Array of currents for short circuit curve
  * @param CurveLengthShotC Number of points in short circuit curve
  */
-void SetMinVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_t CurveLengthOpenC,
-                        double *VoltagesShortC, double *CurrentsShortC, uint32_t CurveLengthShotC)
+void SetMinVarVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_t CurveLengthOpenC,
+                           double *VoltagesShortC, double *CurrentsShortC, uint32_t CurveLengthShotC)
 {
   /*
    * Scaling threshold should be n * sigma.
@@ -559,8 +559,10 @@ void SetMinVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_t C
    * Short circuit - no voltage drop, so we can evaluate voltage noise.
    */
   const float SigmaFactor = 3.0;
-  MinVarV = SigmaFactor * sqrt(Disp(VoltagesShortC, CurveLengthShotC));
-  MinVarC = SigmaFactor * sqrt(Disp(CurrentsOpenC, CurveLengthOpenC));
+  double NewMinVarV = SigmaFactor * sqrt(Disp(VoltagesShortC, CurveLengthShotC));
+  double NewMinVarC = SigmaFactor * sqrt(Disp(CurrentsOpenC, CurveLengthOpenC));
+
+  SetMinVarVC(NewMinVarV, NewMinVarC);
 
   /* To avoid warnings for unused params, but save standard interface */
   (void)(VoltagesOpenC);
@@ -571,13 +573,13 @@ void SetMinVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_t C
 /**
  * Gets active scaling threshold for voltages and currents
  *
- * @param NewMinVPtr - variable pointer to store voltage variation.
- * @param NewMinCPtr - variable pointer to store current variation.
+ * @param NewMinVarVPtr - variable pointer to store voltage variation.
+ * @param NewMinVarCPtr - variable pointer to store current variation.
  */
-void GetMinVC(double *NewMinVPtr, double *NewMinCPtr)
+void GetMinVarVC(double *NewMinVarVPtr, double *NewMinVarCPtr)
 {
-	*NewMinVPtr = MinVarV;
-	*NewMinCPtr = MinVarC;
+	*NewMinVarVPtr = MinVarV;
+	*NewMinVarCPtr = MinVarC;
 }
 
 
@@ -603,7 +605,8 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   /* Check parameters */
   if (CurveLengthA <= MIN_LEN_CURVE || CurveLengthB <= MIN_LEN_CURVE)
   {
-    return SCORE_ERROR;
+	printf("IVCMP ERROR: The signature length is too small. There should be at least %d points.\n", MIN_LEN_CURVE);
+	return SCORE_ERROR;
   }
 
   if (MinVarC <= 0 || MinVarV <= 0)
@@ -612,7 +615,9 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
      * Min variance should be at least several times larger than noise dispersion.
      * Optimal value - possible curve size.
      */
-    return SCORE_ERROR;
+	Score = SCORE_ERROR;
+	printf("IVCMP ERROR: Invalid normalization thresholds (MinVarVC). You should explicitly set them.\n");
+	return SCORE_ERROR;
   }
 
 #ifdef DEBUG_FILE_OUTPUT
@@ -648,8 +653,10 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   
   if (!VoltagesA | !CurrentsA)
   {
+	Score = SCORE_ERROR;
     CleanUp(a_, b_, NULL, NULL);
-    return -1;
+	printf("IVCMP ERROR: Invalid currents or voltages pointers given!\n");
+	return Score;
   }
 
   for (i = 0; i < CurveLengthA; i++)
@@ -726,7 +733,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
   if (SizeA < MIN_LEN_CURVE)
   {
     Score = SCORE_ERROR;
-    printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
+    printf("IVCMP ERROR:  all elements of curve identical. Algorithm doesn't match such curves!\n");
     CleanUp(a_, b_, InCurve, OutCurve);
     return Score;
   }
@@ -794,7 +801,7 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
     if (SizeB < MIN_LEN_CURVE)
     {
       Score = SCORE_ERROR;
-      printf("ERROR:  all elements of curve identical. Algorithm doesn't match such curves!");
+      printf("IVCMP ERROR:  all elements of curve identical. Algorithm doesn't match such curves!\n");
       CleanUp(a_, b_, InCurve, OutCurve);
       return Score;
     }
