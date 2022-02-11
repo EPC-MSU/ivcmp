@@ -60,23 +60,6 @@ static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
 }
 
 /**
- * Returns the difference vector of vector and variable
- * 
- * @param[in] a first vector
- * @param[in] b variable
- * @param[out] v resulting vector
- * @param[in] SizeArr vector length
- */
-static void SubtractVar(double *a, double b, double *v, uint32_t SizeArr)
-{
-  uint32_t i;
-  for (i = 0; i < SizeArr; i++)
-  {
-    v[i] = a[i] - b;
-  }
-}
-
-/**
  * Returns the vector mean
  *
  * @param[in] mas vector
