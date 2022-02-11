@@ -532,8 +532,14 @@ void SetMinVarVC(double NewMinVarV, double NewMinVarC)
   }
   else
   {
-    printf("IVCMP ERROR: Incorrect MinVarV, MinVarC setup. Got %lf, %lf. Should be > 0.\n",
+    printf("IVCMP ERROR: Incorrect MinVarV, MinVarC setup. Got %lf, %lf. Should be > 0.\n"
+		   "CompareIVC() will not work until correct MinVar setup\n",
 		   NewMinVarV, NewMinVarC);
+	/*
+	 * Error maximization. Compare will return -1 until correct MinVar setup.
+	 */
+	MinVarV = 0;
+	MinVarC = 0;
   }
 }
 

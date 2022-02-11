@@ -94,10 +94,15 @@ class TestIVCMPMethods(unittest.TestCase):
         self.assertTrue(res1 > 0)
 
     def test_error_message(self):
+        self.IVCResistor1 = IvCurve()
+
         # An error will be printed to stdout
         # and it is not easy to get it here
-        print("The following error message is a part of test. Don’t care.")
+        print("VVV  The following error messages are a part of test. Don’t care.  VVV")
         SetMinVarVC(0, 0)
+        with self.assertRaises(RuntimeError):
+            CompareIvc(self.IVCResistor1, self.IVCResistor1)
+        print("^^^ Error testing finished. In case there are any error messages below, it’s a problem. ^^^")
 
     def test_get_min_var(self):
         # An error will be printed to stdout

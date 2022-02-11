@@ -164,6 +164,10 @@ def CompareIvc(first_iv_curve, second_iv_curve):
     res = lib_func(first_iv_curve.voltages, first_iv_curve.currents, first_iv_curve.length,
                    second_iv_curve.voltages, second_iv_curve.currents, second_iv_curve.length)
     res = _normalize_arg(res, c_double)
+
+    if res < 0:
+        raise RuntimeError("Something went wrong during ivcmp.CompareIVC() call. More details in console output.")
+
     return res
 
 
