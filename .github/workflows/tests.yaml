@@ -27,4 +27,4 @@ jobs:
       - name: Run tests
         run: |
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
-          python -m unittest discover tests
+          python -m unittest discover pyivcmp/tests
