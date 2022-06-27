@@ -305,7 +305,20 @@ static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
     res += min(Dist1, Dist2);
   }
   res /= SizeJ;
-  CleanUp(CurveT, PtsT, v, NULL);
+  
+  
+  //CleanUp(CurveT, PtsT, v, NULL);
+
+  for (i = 0; i < SizeJ; i++)
+  {
+	  free(CurveT[i]);
+	  free(PtsT[i]);
+  }
+
+  free(CurveT);
+  free(PtsT);
+  free(v);
+
   return res;
 }
 
