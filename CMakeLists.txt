@@ -37,3 +37,12 @@ if(NOT WIN32)
     target_link_libraries(${PROJECT_LIB_NAME} m)
     target_link_libraries(${PROJECT_EXAMPLE_NAME} m)
 endif()
+
+# Treat Warnings as Errors
+if(MSVC)
+  target_compile_options(${PROJECT_LIB_NAME} PRIVATE /W3 /WX)
+  target_compile_options(${PROJECT_EXAMPLE_NAME} PRIVATE /W3 /WX)
+else()
+  target_compile_options(${PROJECT_LIB_NAME} PRIVATE -Wall -Wextra -Werror)
+  target_compile_options(${PROJECT_EXAMPLE_NAME} PRIVATE -Wall -Wextra -Werror)
+endif()
