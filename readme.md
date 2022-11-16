@@ -4,7 +4,7 @@
 
 ## Инструкция для Linux
 
-###1. Установка cmake
+### 1. Установка cmake
 ```
 sudo apt install cmake
 ```
