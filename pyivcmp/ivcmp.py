@@ -1,7 +1,9 @@
 from ctypes import CDLL, Structure, Array, c_ubyte, c_double, c_size_t, POINTER, pointer
 from platform import system
 import numpy as np
+import logging
 import os
+
 VOLTAGE_AMPL = 12.
 R_CS = 475.
 CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
@@ -11,13 +13,44 @@ def _fullpath_lib(name: str) -> str:
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
 
 
+def _load_specific_lib(path):
+    try:
+        lib = CDLL(path)
+        logging.debug("Load library " + path + ": success")
+        return lib
+    except OSError as err:
+        logging.debug("Load library " + path + ": failed, " + str(err))
+        raise err
+
+
 def _get_dll():
     if system() == "Linux":
-        return CDLL(_fullpath_lib("libivcmp.so"))
+        paths = (
+            _fullpath_lib("libivcmp.so"),
+            "libivcmp.so",
+        )
     elif system() == "Windows":
-        return CDLL(_fullpath_lib("ivcmp.dll"))
+        paths = (
+            _fullpath_lib("ivcmp.dll"),
+            "ivcmp.dll",
+        )
     else:
         raise NotImplementedError("Unsupported platform {0}".format(system()))
+
+    errors = []
+    for path in paths:
+        try:
+            lib = _load_specific_lib(path)
+        except Exception as e:
+            errors.append(str(e))
+        else:
+            return lib
+
+    error_msg = "Unable to load library. Paths tried:\n"
+    for i, path in enumerate(paths):
+        error_msg = error_msg + str(path) + " - got error: " + errors[i] + "\n"
+
+    raise RuntimeError(error_msg)
 
 
 lib = _get_dll()
