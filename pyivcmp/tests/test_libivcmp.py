@@ -8,7 +8,7 @@ import numpy as np
 
 
 class TestIVCMPMethods(unittest.TestCase):
-    def test_number_one(self):
+    def test_r_and_same_r(self):
         self.IVCResistor1 = IvCurve()
         self.IVCResistor1.length = MAX_NUM_POINTS
         for i in range(MAX_NUM_POINTS):
@@ -21,7 +21,7 @@ class TestIVCMPMethods(unittest.TestCase):
         res = CompareIvc(self.IVCResistor1, self.IVCResistor1)
         self.assertTrue(res < 0.05)
 
-    def test_number_two(self):
+    def test_short_and_open_circuit(self):
         self.IVCOpenCircuit = IvCurve()
         self.IVCOpenCircuit.length = MAX_NUM_POINTS
         self.IVCShortCircuit = IvCurve()
@@ -38,7 +38,7 @@ class TestIVCMPMethods(unittest.TestCase):
         res = CompareIvc(self.IVCShortCircuit, self.IVCOpenCircuit)
         self.assertTrue((res - 0.99) < 0.05)
 
-    def test_number_three(self):
+    def test_r1_and_r2(self):
         self.IVCResistor1 = IvCurve()
         self.IVCResistor1.length = MAX_NUM_POINTS
         self.IVCResistor2 = IvCurve()
@@ -55,7 +55,7 @@ class TestIVCMPMethods(unittest.TestCase):
         res = CompareIvc(self.IVCResistor1, self.IVCResistor2)
         self.assertTrue((res - 0.25) < 0.05)
 
-    def test_number_four(self):
+    def test_r_and_c(self):
         self.IVCResistor1 = IvCurve()
         self.IVCResistor1.length = MAX_NUM_POINTS
         self.IVCCapacitor = IvCurve()
@@ -72,7 +72,27 @@ class TestIVCMPMethods(unittest.TestCase):
         res = CompareIvc(self.IVCResistor1, self.IVCCapacitor)
         self.assertTrue((res - 0.99) < 0.05)
 
-    def test_number_five(self):
+    def test_c_and_shifted_c(self):
+        """
+        C and shifted C during charge - two different curves.
+        """
+        self.IVCCapacitor = IvCurve()
+        self.IVCCapacitor.length = MAX_NUM_POINTS
+        self.IVCCapacitorShifted = IvCurve()
+        self.IVCCapacitorShifted.length = MAX_NUM_POINTS
+        for i in range(MAX_NUM_POINTS):
+            self.IVCCapacitor.voltages[i] = VOLTAGE_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
+            self.IVCCapacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / MAX_NUM_POINTS)
+            self.IVCCapacitorShifted.voltages[i] = VOLTAGE_AMPL * (np.sin(2 * np.pi * i / MAX_NUM_POINTS) + 0.2)
+            self.IVCCapacitorShifted.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / MAX_NUM_POINTS)
+
+        # Set Voltage and Current scale
+        SetMinVarVC(VOLTAGE_AMPL * 0.03, CURRENT_AMPL * 0.03)
+
+        res = CompareIvc(self.IVCCapacitor, self.IVCCapacitorShifted)
+        self.assertTrue(res > 0.2)
+
+    def test_different_lengths(self):
         self.IVCResistor1 = IvCurve()
         self.IVCResistor1.length = MAX_NUM_POINTS
         for i in range(MAX_NUM_POINTS):
