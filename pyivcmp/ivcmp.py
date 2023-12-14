@@ -92,13 +92,43 @@ class IvCurve(_IterableStructure):
 
     """
     _fields_ = (
-        ("voltages", c_double*MAX_NUM_POINTS),
-        ("currents", c_double*MAX_NUM_POINTS),
+        ("_voltages", c_double*MAX_NUM_POINTS),
+        ("_currents", c_double*MAX_NUM_POINTS),
         ("length", c_size_t)
     )
 
     def __init__(self):
         self.length = 0
+
+    @property
+    def voltages(self):
+        return self._voltages
+
+    @voltages.setter
+    def voltages(self, new_voltages_array):
+        if len(new_voltages_array) > MAX_NUM_POINTS:
+            raise ValueError("Voltages array length is too large: {} should be less or equal {}".format(
+                len(new_voltages_array), MAX_NUM_POINTS
+            ))
+
+        for i in range(len(new_voltages_array)):
+            # Elementwise assignment for correct ctypes conversion
+            self._voltages[i] = c_double(new_voltages_array[i])
+
+    @property
+    def currents(self):
+        return self._currents
+
+    @currents.setter
+    def currents(self, new_currents_array):
+        if len(new_currents_array) > MAX_NUM_POINTS:
+            raise ValueError("Currents array length is too large: {} should be less or equal {}".format(
+                len(new_currents_array), MAX_NUM_POINTS
+            ))
+
+        for i in range(len(new_currents_array)):
+            # Elementwise assignment for correct ctypes conversion
+            self._currents[i] = c_double(new_currents_array[i])
 
 
 def SetMinVarVC(min_var_v, min_var_c):
