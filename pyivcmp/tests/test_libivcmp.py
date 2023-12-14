@@ -109,12 +109,32 @@ class TestIVCMPMethods(unittest.TestCase):
         SetMinVarVC(VOLTAGE_AMPL * 0.03, CURRENT_AMPL * 0.03)
 
         res1 = CompareIvc(ivc_resistor_1, ivc_capacitor)
-        res2 = CompareIvc(ivc_resistor_1, ivc_capacitor)
+        res2 = CompareIvc(ivc_capacitor, ivc_resistor_1)
         self.assertTrue((res1 - res2) < 0.05)
-        self.assertTrue(res1 > 0)
+
+    def test_zero_length(self):
+        ivc_resistor_1 = IvCurve()
+        for i in range(MAX_NUM_POINTS):
+            ivc_resistor_1.voltages[i] = 0.5 * VOLTAGE_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
+            ivc_resistor_1.currents[i] = 0.5 * CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
+
+        ivc_capacitor = IvCurve()
+        for i in range(ivc_capacitor.length):
+            ivc_capacitor.voltages[i] = VOLTAGE_AMPL * np.sin(2 * np.pi * i / ivc_capacitor.length)
+            ivc_capacitor.currents[i] = CURRENT_AMPL * np.cos(2 * np.pi * i / ivc_capacitor.length)
+
+        # Set Voltage and Current scale
+        SetMinVarVC(VOLTAGE_AMPL * 0.03, CURRENT_AMPL * 0.03)
+
+        with self.assertRaises(ValueError):
+            CompareIvc(ivc_resistor_1, ivc_capacitor)
 
     def test_error_message(self):
         ivc_resistor_1 = IvCurve()
+        for i in range(MAX_NUM_POINTS):
+            ivc_resistor_1.length = MAX_NUM_POINTS
+            ivc_resistor_1.voltages[i] = 0.5 * VOLTAGE_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
+            ivc_resistor_1.currents[i] = 0.5 * CURRENT_AMPL * np.sin(2 * np.pi * i / MAX_NUM_POINTS)
 
         # An error will be printed to stdout
         # and it is not easy to get it here

@@ -98,7 +98,7 @@ class IvCurve(_IterableStructure):
     )
 
     def __init__(self):
-        self.length = MAX_NUM_POINTS
+        self.length = 0
 
 
 def SetMinVarVC(min_var_v, min_var_c):
@@ -196,6 +196,9 @@ def CompareIvc(first_iv_curve, second_iv_curve):
     @param first_iv_curve первая кривая для сравнения (объект типа IvCurve)
     @param second_iv_curve первая кривая для сравнения (объект типа IvCurve)
     """
+    if first_iv_curve.length == 0 or second_iv_curve.length == 0:
+        raise ValueError("IVCurve length attribute should be explicitly set. And it should not be zero")
+
     lib_func = lib.CompareIVC
     lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
     lib_func.restype = c_double
