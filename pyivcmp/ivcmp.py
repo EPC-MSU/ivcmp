@@ -1,16 +1,21 @@
 from ctypes import CDLL, Structure, Array, c_ubyte, c_double, c_size_t, POINTER, pointer
 from platform import system
 import numpy as np
+import os
 VOLTAGE_AMPL = 12.
 R_CS = 475.
 CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
 
 
+def _fullpath_lib(name: str) -> str:
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
+
+
 def _get_dll():
     if system() == "Linux":
-        return CDLL("libivcmp.so")
+        return CDLL(_fullpath_lib("libivcmp.so"))
     elif system() == "Windows":
-        return CDLL("ivcmp.dll")
+        return CDLL(_fullpath_lib("ivcmp.dll"))
     else:
         raise NotImplementedError("Unsupported platform {0}".format(system()))
 
