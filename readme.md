@@ -9,7 +9,6 @@
 sudo apt install cmake
 ```
 
-
 ### 2. Сборка и установка
 
 Для сборки удобно создать отдельную папку в папке проекта:
@@ -28,52 +27,40 @@ cmake ..
 make
 ```
 
-Готово. В папке build появится библиотека libivcmp.so и исполняемый файл ivcmpexample;
-
+Готово. В папке build появится библиотека libivcmp.so и исполняемый файл ivcmpexample.
 
 Запуск:
 ```
 ./ivcmpexample
 ```
 
+## Инструкция для Windows
 
-## Инструкция для Windows:
+Для сборки под Windows понадобятся CMake, MinGW (или MSVC) и Redistributable Packages 2013. 
 
-Для сборки под Windows понадобятся CMake, MinGW (или msvc) и Redistributable Packages 2013. 
-
-Под Windows для генерации файлов проектом удобно использовать CMake Gui https://cmake.org/download/
-
-* В CMake Gui в поле "Where is the source code" указать полный путь до папки проекта ivcmp
-
-* В CMake Gui в поле  "Where to build binaries" указать полный путь до каталога, куда положить сборку. Например, это может быть папка build в каталоге проекта
-
-* В CMake Gui нажать кнопку "Configure". В новом окне программа предложит выбрать генератор проекта. Можно выбрать либо MinGW, либо Visual Studio
+Под Windows для генерации файлов проектом удобно использовать CMake Gui https://cmake.org/download/:
+* В CMake Gui в поле "Where is the source code" указать полный путь до папки проекта ivcmp.
+* В CMake Gui в поле "Where to build binaries" указать полный путь до каталога, куда положить сборку. Например, это может быть папка build в каталоге проекта.
+* В CMake Gui нажать кнопку "Configure". В новом окне программа предложит выбрать генератор проекта. Можно выбрать либо MinGW, либо Visual Studio.
 
 Далее, в зависимости от желаемого типа проекта:
 
 *Для Visual Studio 2013*
-* Выбрать Visual Studio 2013, нажать Finish.
-* Нажать Generate, затем Open project
-
-* Появится окно Visual Studio с проектом. Дальше собрать кнопкой Build, как обычный MSVC проект
-
-* Готово. Можно запускать собранный пример ivcmpexample.exe; библиотека ivcmp.dll, ivcmp.lib рядом
+* Выбрать Visual Studio 2013, нажать "Finish".
+* Нажать "Generate", затем "Open project".
+* Появится окно Visual Studio с проектом. Дальше собрать кнопкой "Build", как обычный MSVC проект.
+* Готово. Можно запускать собранный пример ivcmpexample.exe; библиотека ivcmp.dll, ivcmp.lib рядом.
 
 *Для MinGW*
-
-* Выбрать MinGW, нажать Finish
-
-* Нажать кнопку Generate
-
-* Открыть консоль, встать в директорию со сгенерированными файлами
-
+* Выбрать MinGW, нажать "Finish".
+* Нажать кнопку "Generate".
+* Открыть консоль, встать в директорию со сгенерированными файлами.
 * Выполнить сборку mingw:
     ```
     mingw32-make
     ```
-(путь до mingw должен быть в системных путях)
-
-Готово. Можно запускать пример ivcmpexample.exe; библиотеки ivcmp.dll, ivcmp.lib рядом (при сборке с MinGW - ivcmp.dll; статической библиотеки .lib нет)
+  (путь до mingw должен быть в системных путях)
+* Готово. Можно запускать собранный пример ivcmpexample.exe; библиотеки ivcmp.dll, ivcmp.lib рядом (при сборке с MinGW - ivcmp.dll; статической библиотеки .lib нет).
 
 ## Отладка
 
