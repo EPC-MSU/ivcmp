@@ -8,9 +8,9 @@
 
 2. Вычисляются максимальные разбросы тока и напряжения $var_x = \sqrt{\langle(x - \langle x \rangle)^2\rangle}$, $\langle.\rangle$ - усреднение: 
    
-   $var_v = max\{var_{v_a}, var_{v_b}\}$
+   $$var_v = \max \{ var_{v_a}, var_{v_b} \}$$
    
-   $var_I = max\{var_{I_a}, var_{I_b}\}$
+   $$var_I = \max \{ var_{I_a}, var_{I_b} \}$$
 
 3. Кривые масштабируются на максимальный разброс: 
    $v_a := \frac{v_a}{var_v}$
