@@ -1,15 +1,14 @@
-import numpy as np
-from scipy import interpolate
-import matplotlib.pyplot as plt
+import json
 import os
 import sys
-import json
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtWidgets import QWidget, QDesktopWidget, QApplication, QPushButton, QLabel
-from PyQt5 import QtCore
+import matplotlib.pyplot as plt
+import numpy as np
 import pylab
+from scipy import interpolate
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import QApplication, QDesktopWidget, QFileDialog, QLabel, QPushButton, QWidget
 
-eq_k = 1
+
 DEBUG_MODE = False
 
 
@@ -26,9 +25,6 @@ def dist2_pt_seg(p, a, b):
     return np.cross(v1, v2) ** 2 / seg_len2
 
 
-v_dist2_pt_seg = np.vectorize(dist2_pt_seg)
-
-
 def rescale_score(x):
     return 1 - np.exp(-8 * x)
 
@@ -40,8 +36,7 @@ def dist_curve_pts(curve, pts):
         min_i = v.argmin()
         res += min(
             dist2_pt_seg(pt, curve[:, min_i - 1], curve[:, min_i]) if min_i > 0 else np.inf,
-            dist2_pt_seg(pt, curve[:, min_i], curve[:, min_i + 1]) if min_i < len(
-                curve[0]) - 1 else np.inf)
+            dist2_pt_seg(pt, curve[:, min_i], curve[:, min_i + 1]) if min_i < len(curve[0]) - 1 else np.inf)
     res /= len(pts.T)
     return res
 
@@ -52,19 +47,28 @@ def remove_repeats_ivc(a, eps=1e-6):
     return a[0][msk0 | msk1], a[1][msk0 | msk1]
 
 
+def write_curve_to_file(file_name: str, curve) -> None:
+    with open(file_name, "w") as file:
+        for i in range(len(curve[0])):
+            file.write("{}\t{}\n".format(curve[0][i], curve[1][i]))
+
+
+def write_variations(file_name: str, var_v, var_c) -> None:
+    with open(file_name, "w") as file:
+        file.write("{}\t{}\n".format(var_v, var_c))
+
+
 def compare_ivc(a, b=None, min_var_v=None, min_var_c=None):
     # a, b:  tuple(oscilloscope instance, curve)
     # curve: tuple(voltage_points, current_points)
 
     if a is None:
         return 0
+
     if DEBUG_MODE:
-        with open("input_curve_a_py.txt", "w") as f:
-            for i in range(len(a[0])):
-                f.write("{}\t{}\n".format(a[0][i], a[1][i]))
-        with open("input_curve_b_py.txt", "w") as f:
-            for i in range(len(a[0])):
-                f.write("{}\t{}\n".format(b[0][i], b[1][i]))
+        write_curve_to_file("input_curve_a_py.txt", a)
+        write_curve_to_file("input_curve_b_py.txt", b)
+
     min_v = max(np.max(a[0]), 0.6)
     min_c = max(np.max(a[1]), 0.0002)
     # Now a and b - curves - tuple(voltage_points, current_points)
@@ -79,75 +83,64 @@ def compare_ivc(a, b=None, min_var_v=None, min_var_c=None):
     var_v = max(np.var(a[0]) ** 0.5, np.var(b[0]) ** 0.5 if b is not None else 0, min_var_v)
     var_c = max(np.var(a[1]) ** 0.5, np.var(b[1]) ** 0.5 if b is not None else 0, min_var_c)
     if DEBUG_MODE:
-        with open("variations_py.txt", "w") as f:
-            f.write("{}\t{}\n".format(var_v, var_c))
+        write_variations("variations_py.txt", var_v, var_c)
+
     _eq_k = 1
     an = np.subtract(a[0], np.mean(a[0])) / var_v, np.subtract(a[1], np.mean(a[1])) / var_c
     if DEBUG_MODE:
-        with open("scaled_a_py.txt", "w") as f:
-            for i in range(len(an[0])):
-                f.write("{}\t{}\n".format(an[0][i], an[1][i]))
+        write_curve_to_file("scaled_a_py.txt", an)
+
     an = remove_repeats_ivc(an)
     if DEBUG_MODE:
-        with open("repeats_removed_a_py.txt", "w") as f:
-            for i in range(len(an[0])):
-                f.write("{}\t{}\n".format(an[0][i], an[1][i]))
+        write_curve_to_file("repeats_removed_a_py.txt", an)
+
     tck, u = interpolate.splprep(an, s=0.00)
     eq1 = np.array(interpolate.splev(np.arange(0, 1, 1.0 / len(a[0]) / _eq_k), tck))
     if DEBUG_MODE:
-        with open("splined_a_py.txt", "w") as f:
-            for i in range(len(eq1[0])):
-                f.write("{}\t{}\n".format(eq1[0][i], eq1[1][i]))
-    if b is not None:
-        bn = np.subtract(b[0], np.mean(b[0])) / var_v, np.subtract(b[1], np.mean(b[1])) / var_c
-        if DEBUG_MODE:
-            with open("scaled_b_py.txt", "w") as f:
-                for i in range(len(bn[0])):
-                    f.write("{}\t{}\n".format(bn[0][i], bn[1][i]))
-        bn = remove_repeats_ivc(bn)
-        if DEBUG_MODE:
-            with open("repeats_removed_b_py.txt", "w") as f:
-                for i in range(len(an[0])):
-                    f.write("{}\t{}\n".format(bn[0][i], bn[1][i]))
-        tck, u = interpolate.splprep(bn, s=0.00)
-        eq2 = np.array(interpolate.splev(np.arange(0, 1, 1.0 / len(b[0]) / _eq_k), tck))
-        if DEBUG_MODE:
-            with open("splined_b_py.txt", "w") as f:
-                for i in range(len(eq2[0])):
-                    f.write("{}\t{}\n".format(eq2[0][i], eq2[1][i]))
+        write_curve_to_file("splined_a_py.txt", eq1)
+
     if b is None:
         return rescale_score(np.mean(eq1[1, :] ** 2))
-    else:
-        if DEBUG_MODE:
-            with open("dist_and_scores_py.txt", "w") as f:
-                f.write("distAB: {}\n".format((dist_curve_pts(eq1, eq2))))
-                f.write("distBA: {}\n".format((dist_curve_pts(eq2, eq1))))
-                f.write("score: {}\n".format(rescale_score((dist_curve_pts(eq1, eq2) + dist_curve_pts(eq2, eq1)) / 2.)))
-        return rescale_score((dist_curve_pts(eq1, eq2) + dist_curve_pts(eq2, eq1)) / 2.)
+
+    bn = np.subtract(b[0], np.mean(b[0])) / var_v, np.subtract(b[1], np.mean(b[1])) / var_c
+    if DEBUG_MODE:
+        write_curve_to_file("scaled_b_py.txt", bn)
+
+    bn = remove_repeats_ivc(bn)
+    if DEBUG_MODE:
+        write_curve_to_file("repeats_removed_b_py.txt", bn)
+
+    tck, u = interpolate.splprep(bn, s=0.00)
+    eq2 = np.array(interpolate.splev(np.arange(0, 1, 1.0 / len(b[0]) / _eq_k), tck))
+    if DEBUG_MODE:
+        write_curve_to_file("splined_b_py.txt", eq2)
+        with open("dist_and_scores_py.txt", "w") as f:
+            f.write("distAB: {}\n".format((dist_curve_pts(eq1, eq2))))
+            f.write("distBA: {}\n".format((dist_curve_pts(eq2, eq1))))
+            f.write("score: {}\n".format(rescale_score((dist_curve_pts(eq1, eq2) + dist_curve_pts(eq2, eq1)) / 2.)))
+
+    return rescale_score((dist_curve_pts(eq1, eq2) + dist_curve_pts(eq2, eq1)) / 2.)
 
 
 class MainWindow(QWidget):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
+        self.init_ui()
 
-        self.initUI()
-
-    def initUI(self):
-
+    def init_ui(self) -> None:
+        self.setWindowTitle("Comparing")
         self.resize(300, 150)
         self.center()
+
         self.qbtn = QPushButton("Compare curves", self)
-        self.lbl = QLabel(self)
-        self.lbl.move(75, 100)
         self.qbtn.clicked.connect(self.main)
         self.qbtn.resize(self.qbtn.sizeHint())
         self.qbtn.move(100, 50)
-        self.setWindowTitle("Comparing")
-        self.show()
+        self.lbl = QLabel(self)
+        self.lbl.move(75, 100)
 
-    def center(self):
-
+    def center(self) -> None:
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
@@ -155,21 +148,16 @@ class MainWindow(QWidget):
 
     @QtCore.pyqtSlot(bool)
     def main(self):
-        real_path = QFileDialog.getOpenFileName(
-            caption="Выберите json-файл",
-            directory=os.path.join("./", "ivc_1"),
-            filter="JSON file (*.json)"
-        )[0]
-        virt_path = QFileDialog.getOpenFileName(
-            caption="Выберите json-файл",
-            directory=os.path.join("./", "ivc_2"),
-            filter="JSON file (*.json)"
-        )[0]
+        real_path = QFileDialog.getOpenFileName(caption="Выберите json-файл", directory=os.path.join("./", "ivc_1"),
+                                                filter="JSON file (*.json)")[0]
+        virt_path = QFileDialog.getOpenFileName(caption="Выберите json-файл", directory=os.path.join("./", "ivc_2"),
+                                                filter="JSON file (*.json)")[0]
         if real_path != "" and virt_path != "":
             with open(real_path, "r") as dump_file:
                 ivc_real = json.load(dump_file)
             with open(virt_path, "r") as dump_file:
                 ivc_virt = json.load(dump_file)
+
             score = calc_score(ivc_real, ivc_virt)
             self.lbl.setText("Score: " + str(score))
             self.lbl.adjustSize()
@@ -199,5 +187,6 @@ def calc_score(ivc_real, ivc_virt):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    ex = MainWindow()
+    window = MainWindow()
+    window.show()
     sys.exit(app.exec_())
