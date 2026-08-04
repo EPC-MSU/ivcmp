@@ -19,8 +19,11 @@
 3. Кривые масштабируются на максимальный разброс: 
 
    $$V_A := \frac{V_A}{var_V}$$
-   $$V_B:= \frac{V_B}{var_v}$$
+
+   $$V_B:= \frac{V_B}{var_V}$$
+
    $$I_A := \frac{I_A}{var_I}$$
+
    $$I_B:= \frac{I_B}{var_I}$$
    
    ![3_scaled](3_scaled.png)
