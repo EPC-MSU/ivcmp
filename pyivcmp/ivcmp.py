@@ -85,15 +85,15 @@ def _normalize_arg(value, desired_ctype):
 
 class IvCurve(_IterableStructure):
     """
-    Класс сигнатуры (ВАХ)
-    voltages - массив напряжений [Вольты]
-    сurrents - массив токов [мА]
+    Класс сигнатуры (ВАХ).
+    voltages - массив напряжений [В].
+    сurrents - массив токов [мА].
     length - количество элементов в массивах voltages и currents (должно быть одинаковым).
-
     """
+
     _fields_ = (
-        ("_voltages", c_double*MAX_NUM_POINTS),
-        ("_currents", c_double*MAX_NUM_POINTS),
+        ("_voltages", c_double * MAX_NUM_POINTS),
+        ("_currents", c_double * MAX_NUM_POINTS),
         ("length", c_size_t)
     )
 
@@ -108,8 +108,7 @@ class IvCurve(_IterableStructure):
     def voltages(self, new_voltages_array):
         if len(new_voltages_array) > MAX_NUM_POINTS:
             raise ValueError("Voltages array length is too large: {} should be less or equal {}".format(
-                len(new_voltages_array), MAX_NUM_POINTS
-            ))
+                len(new_voltages_array), MAX_NUM_POINTS))
 
         for i in range(len(new_voltages_array)):
             # Elementwise assignment for correct ctypes conversion
@@ -123,8 +122,7 @@ class IvCurve(_IterableStructure):
     def currents(self, new_currents_array):
         if len(new_currents_array) > MAX_NUM_POINTS:
             raise ValueError("Currents array length is too large: {} should be less or equal {}".format(
-                len(new_currents_array), MAX_NUM_POINTS
-            ))
+                len(new_currents_array), MAX_NUM_POINTS))
 
         for i in range(len(new_currents_array)):
             # Elementwise assignment for correct ctypes conversion
@@ -161,6 +159,7 @@ def SetMinVarVC(min_var_v, min_var_c):
     @param min_var_v Характерный масштаб по напряжению. Единицы измерения: Вольты.
     @param min_var_c Характерный масштаб по току. Единицы измерения: мА.
     """
+
     lib_func = lib.SetMinVarVC
     lib_func.argtype = c_double, c_double
     lib_func(c_double(min_var_v),  c_double(min_var_c))
@@ -184,6 +183,7 @@ def SetMinVarVCFromCurves(open_circuit_iv_curve, short_circuit_iv_curve):
     @param open_circuit_iv_curve сигнатура, снятая при разомкнутых щупах (объект типа IvCurve)
     @param short_circuit_iv_curve сигнатура, снятая при разомкнутых щупах (объект типа IvCurve)
     """
+
     lib_func = lib.SetMinVarVCFromCurves
     lib_func.argtype = POINTER(c_double), POINTER(c_double), c_size_t, POINTER(c_double), POINTER(c_double), c_size_t
     lib_func.restype = c_double
@@ -198,6 +198,7 @@ def GetMinVarVC():
     Функция для получения текущих значений порогов масштабирования при нормировке токов и напряжений.
     Подробнее о порогах см. описание функции SetMinVarVC.
     """
+
     min_var_v = c_double()
     min_var_c = c_double()
 
@@ -206,6 +207,12 @@ def GetMinVarVC():
 
     lib_func(pointer(min_var_v), pointer(min_var_c))
     return min_var_v.value, min_var_c.value
+
+
+def SetRangesVC(range_v, range_c):
+    lib_func = lib.SetRangesVC
+    lib_func.argtype = c_double, c_double
+    lib_func(c_double(range_v), c_double(range_c))
 
 
 def CompareIvc(first_iv_curve, second_iv_curve):
@@ -226,6 +233,7 @@ def CompareIvc(first_iv_curve, second_iv_curve):
     @param first_iv_curve первая кривая для сравнения (объект типа IvCurve)
     @param second_iv_curve первая кривая для сравнения (объект типа IvCurve)
     """
+
     if first_iv_curve.length == 0 or second_iv_curve.length == 0:
         raise ValueError("IVCurve length attribute should be explicitly set. And it should not be zero")
 

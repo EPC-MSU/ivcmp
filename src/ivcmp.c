@@ -1,5 +1,6 @@
 /* This module compares two iv-curves and returnes Score from 0.0 to 1.0
  */
+#include <float.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
