@@ -22,6 +22,7 @@
 #define MIN_VAR_V_DEFAULT 0.6
 #define MIN_VAR_C_DEFAULT 0.0002
 static double MinVarV, MinVarC;
+static double RangeV, RangeC;
 #define SCORE_ERROR -1    /**< Algorithm return Error */
 #define ORDER 3     /**< Order of B-spline */
 #define MIN_LEN_CURVE 2
@@ -41,6 +42,113 @@ static double MinVarV, MinVarC;
 /* ******************************* */
 /*       Internal functions        */
 /* ******************************* */
+
+/**
+ * This function packs separate synchronized 1D arrays of voltages and currents
+ * into a single pre-allocated 2D destination array representing a curve.
+ *
+ * @param[in] Voltages - Pointer to the source array containing voltage values.
+ * @param[in] Currents - Pointer to the source array containing current values.
+ * @param[in] Length - The number of elements to copy from each source array.
+ * @param[out] Curve - Pointer to the destination 2D array, where:
+ * - `Curve[0]` stores the copied voltage array.
+ * - `Curve[1]` stores the copied current array.
+ */
+static void CopyCurve(double *Voltages, double *Currents, uint32_t Length, double **Curve)
+{
+  uint32_t i;
+  for (i = 0; i < Length; i++)
+  {
+    Curve[0][i] = Voltages[i];
+    Curve[1][i] = Currents[i];
+  }
+}
+
+/**
+ * This internal function normalizes or scales a 2D curve array in-place. It divides
+ * all elements in Row 0 (Voltages) by `VarV` and all elements in Row 1 (Currents) by `VarC`.
+ *
+ * @param[in,out] Curve - Pointer to the 2D array representing the curve, where:
+ * - `Curve[0]` points to the voltage array to be scaled.
+ * - `Curve[1]` points to the current array to be scaled.
+ * @param[in] Length - The number of data points inside the curve arrays.
+ * @param[in] VarV - The scaling factor for voltages (must be non-zero).
+ * @param[in] VarC - The scaling factor for currents (must be non-zero).
+ */
+static void ScaleCurve(double **Curve, uint32_t Length, double VarV, double VarC)
+{
+  uint32_t i;
+  for (i = 0; i < Length; i++)
+  {
+    Curve[0][i] = Curve[0][i] / VarV;
+    Curve[1][i] = Curve[1][i] / VarC;
+  }
+}
+
+/**
+ * This internal function opens the specified file in write mode ("w") and logs
+ * data in two columns: Voltages followed by Currents, separated by a tab character.
+ *
+ * @param[in] FileName - Path to the destination file where data will be saved.
+ * @param[in] Voltages - Pointer to the array containing voltage values.
+ * @param[in] Currents - Pointer to the array containing current values.
+ * @param[in] Length - The total number of elements to write from the arrays.
+ */
+static void WriteVoltagesAndCurrentsToFile(const char *FileName, double *Voltages, double *Currents, uint32_t Length)
+{
+  FILE *DebugOutFile = NULL;
+  uint32_t i;
+  if (FileName == NULL || Voltages == NULL || Currents == NULL || Length == 0)
+  {
+    return;
+  }
+
+  OPEN_FILE(DebugOutFile, FileName, "w");
+  if (DebugOutFile == NULL)
+  {
+    return;
+  }
+
+  for (i = 0; i < Length; i++)
+  {
+    fprintf(DebugOutFile, "%lf\t%lf\n", Voltages[i], Currents[i]);
+  }
+  fclose(DebugOutFile);
+}
+
+/**
+ * This internal function extracts synchronized voltage and current points from
+ * a 2D matrix buffer and logs them into a file. Row 0 is treated as X-axis (Voltages)
+ * and Row 1 is treated as Y-axis (Currents).
+ *
+ * @param[in] FileName - Path to the destination file where data will be saved.
+ * @param[in] Curve - Pointer to the source 2D array, where:
+ * - `Curve` holds the array of voltage values.
+ * - `Curve` holds the array of current values.
+ * @param[in] Length - The total number of data points to write from the curve.
+ */
+static void WriteCurveToFile(const char *FileName, double **Curve, uint32_t Length)
+{
+  FILE *DebugOutFile = NULL;
+  uint32_t i;
+
+  if (FileName == NULL || Curve == NULL || Curve[0] == NULL || Curve[1] == NULL || Length == 0)
+  {
+    return;
+  }
+
+  OPEN_FILE(DebugOutFile, FileName, "w");
+  if (DebugOutFile == NULL)
+  {
+    return;
+  }
+
+  for (i = 0; i < Length; i++)
+  {
+    fprintf(DebugOutFile, "%lf\t%lf\n", Curve[0][i], Curve[1][i]);
+  }
+  fclose(DebugOutFile);
+}
 
 /**
  * Returns the difference vector of two vectors
@@ -132,10 +240,12 @@ static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double
   }
   free(Matrix1);
   free(Matrix2);
+
   if (Massive1 != NULL)
   {
     free(Massive1);
   }
+
   if (Massive2 != NULL)
   {
     free(Massive2);
@@ -189,38 +299,56 @@ static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
 }
 
 /**
- * Returns the distance between a point and a segment
+ * This function projects the target point onto the line defined by the segment.
+ * It determines whether the orthogonal projection falls outside the segment bounds
+ * (returning the distance to the closest endpoint) or inside the segment bounds
+ * (returning the perpendicular distance computed via the cross product).
+ * All operations are optimized to utilize fixed stack arrays, eliminating dynamic memory allocations.
  *
- * @param[in] p point
- * @param[in] a first end of a segment
- * @param[in] b second end of a segment
- * @param[in] SizeArr dimension
+ * @param[in] Point - Pointer to the 2D coordinate array of the target point.
+ * @param[in] StartSegment - Pointer to the 2D coordinate array of the segment's starting endpoint.
+ * @param[in] EndSegment - Pointer to the 2D coordinate array of the segment's terminating endpoint.
  *
- * @return distance
+ * @return The minimum Euclidean geometric distance between the point and the segment.
  */
-static double Dist2PtSeg(double *p, double *a, double *b, uint32_t SizeArr)
+static double CalculateDistanceFromPointToSegment(double *Point, double *StartSegment, double *EndSegment)
 {
-  double *v1 = (double *)malloc(SizeArr * sizeof(double));
-  double *v2 = (double *)malloc(SizeArr * sizeof(double));
-  double Result;
-  SubtractVec(b, a, v1, SizeArr);
-  SubtractVec(p, a, v2, SizeArr);
-  double SegLen2 = Dot(v1, v1, SizeArr);
-  double Proj = Dot(v1, v2, SizeArr) / SegLen2;
+  double v1[IV_CURVE_NUM_COMPONENTS];
+  double v2[IV_CURVE_NUM_COMPONENTS];
+  SubtractVec(EndSegment, StartSegment, v1, IV_CURVE_NUM_COMPONENTS);
+  SubtractVec(Point, StartSegment, v2, IV_CURVE_NUM_COMPONENTS);
+  
+  uint32_t i;
+  double SegLen2 = Dot(v1, v1, IV_CURVE_NUM_COMPONENTS);
+  if (SegLen2 <= 1e-12)
+  {
+    double DistanceSquare = 0.0;
+    for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
+    {
+      DistanceSquare += v2[i] * v2[i];
+    }
+    return sqrt(DistanceSquare);
+  }
+
+  double DotV1V2 = Dot(v1, v2, IV_CURVE_NUM_COMPONENTS);
+  double Proj = DotV1V2 / SegLen2;
+  double DistanceSquare;
   if (Proj > 1)
   {
-    SubtractVec(p, b, v1, SizeArr);
-    Result = Dot(v1, v1, SizeArr);
+    SubtractVec(Point, EndSegment, v1, IV_CURVE_NUM_COMPONENTS);
+    DistanceSquare = Dot(v1, v1, IV_CURVE_NUM_COMPONENTS);
   }
   else if (Proj < 0)
   {
-    Result = Dot(v2, v2, SizeArr);
+    DistanceSquare = Dot(v2, v2, IV_CURVE_NUM_COMPONENTS);
   }
-  else Result = pow(Cross(v1, v2), 2) / SegLen2;
-  free(v1); 
-  free(v2);
+  else
+  {
+    double CrossProduct = Cross(v1, v2);
+    DistanceSquare = (CrossProduct * CrossProduct) / SegLen2;
+  }
 
-  return Result;
+  return sqrt(DistanceSquare);
 }
 
 /**
@@ -236,87 +364,130 @@ static double RescaleScore(double x)
 }
 
 /**
- * Returns all distances of two iv_curves
- *
- * @param[in] Curve first curve
- * @param[in] pts second curve
- * @param[in] SizeJ number of points in the curves
- *
- * @return normalized sum of distances
- */
-static double DistCurvePts(double **Curve, double **pts, uint32_t SizeJ)
+* This internal function projects each point from Curve A onto the continuous piecewise-linear
+* segments defined by Curve B. It dynamically supports independent node counts for both curves.
+* The function returns the maximum value among all calculated minimum point-to-segment distances.
+*
+* @param[in] CurveA - Pointer to the first 2D curve matrix (source points).
+* @param[in] CurveLengthA - Total number of data nodes inside Curve A.
+* @param[in] CurveB - Pointer to the second 2D curve matrix (target segments).
+* @param[in] CurveLengthB - Total number of data nodes inside Curve B.
+*
+* @return The maximum directed geometric distance from Curve A to Curve B, or -1.0 if memory allocation fails.
+*/
+static double CalculateDistanceBetweenCurves(double **CurveA, uint32_t CurveLengthA, double **CurveB, uint32_t CurveLengthB)
 {
-  double res = 0.0;
-  uint32_t LocMinItem = 0; double LocMin;
-  double *v = (double *)malloc(SizeJ * sizeof(double));
-  double *PrevNode = NULL;
-  double *CurNode = NULL;
-  double *NextNode = NULL;
-  double *pt = NULL;
-  double Dist1, Dist2;
-  uint32_t j;
-  uint32_t i;
-  double **CurveT = (double **)malloc(SizeJ * sizeof(double *));
-  double **PtsT = (double **)malloc(SizeJ * sizeof(double *));
-  for (i = 0; i < SizeJ; i++)
-  {
-    CurveT[i] = (double*)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double));
-    PtsT[i] = (double*)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double));
-  }
-  
-  Transpose(pts, PtsT, IV_CURVE_NUM_COMPONENTS, SizeJ);
+  double Distance1, Distance2;
+  double ResultDistance = 0.0;
+  uint32_t i, j;
+  uint32_t LocalMinItem = 0;
 
-  for (j = 0; j < SizeJ; j++)
+  double **CurveAT = (double **)calloc(CurveLengthA, sizeof(double *));
+  double **CurveBT = (double **)calloc(CurveLengthB, sizeof(double *));
+  if (CurveAT == NULL || CurveBT == NULL)
   {
-    LocMin = 100000;
-    pt = PtsT[j];
-    for (i = 0; i < SizeJ; i++)
+    free(CurveAT);
+    free(CurveBT);
+    return -1.0;
+  }
+
+  for (i = 0; i < CurveLengthA; i++)
+  {
+    CurveAT[i] = (double *)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double));
+    if (CurveAT[i] == NULL)
     {
-      v[i] = (Curve[0][i] - pt[0]) * (Curve[0][i] - pt[0]) + (Curve[1][i] - pt[1]) * (Curve[1][i] - pt[1]);
-      if (v[i] < LocMin)
+      for (j = 0; j <= i; j++)
       {
-        LocMinItem = i;
-        LocMin = v[i];
+        if (CurveAT[j]) free(CurveAT[j]);
+      }
+      free(CurveAT);
+      free(CurveBT);
+      return -1.0;
+    }
+  }
+
+  for (i = 0; i < CurveLengthB; i++)
+  {
+    CurveBT[i] = (double *)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double));
+    if (CurveBT[i] == NULL)
+    {
+      for (j = 0; j <= i; j++)
+      {
+        if (CurveBT[j]) free(CurveBT[j]);
+      }
+
+      for (j = 0; j < CurveLengthA; j++)
+      {
+        if (CurveAT[j]) free(CurveAT[j]);
+      }
+
+      free(CurveAT);
+      free(CurveBT);
+      return -1.0;
+    }
+  }
+
+  Transpose(CurveA, CurveAT, IV_CURVE_NUM_COMPONENTS, CurveLengthA);
+  Transpose(CurveB, CurveBT, IV_CURVE_NUM_COMPONENTS, CurveLengthB);
+
+  for (j = 0; j < CurveLengthA; j++)
+  {
+    double LocalMin = DBL_MAX;
+    double *PointA = CurveAT[j];
+
+    for (i = 0; i < CurveLengthB; i++)
+    {
+      double *PointB = CurveBT[i];
+      double Distance = sqrt((PointB[0] - PointA[0]) * (PointB[0] - PointA[0]) + (PointB[1] - PointA[1]) * (PointB[1] - PointA[1]));
+      if (Distance < LocalMin)
+      {
+        LocalMin = Distance;
+        LocalMinItem = i;
       }
     }
-
-    Transpose(Curve, CurveT, IV_CURVE_NUM_COMPONENTS, SizeJ);
-    CurNode = CurveT[LocMinItem];
     
-    if (LocMinItem > 0)
+    if (LocalMinItem > 0)
     {
-      PrevNode = CurveT[LocMinItem - 1];
-      Dist1 = Dist2PtSeg(pt, PrevNode, CurNode, IV_CURVE_NUM_COMPONENTS);
+      double *PrevNode = CurveBT[LocalMinItem - 1];
+      double *Node = CurveBT[LocalMinItem];
+      Distance1 = CalculateDistanceFromPointToSegment(PointA, PrevNode, Node);
     }
     else
     {
-      Dist1 = 10000;
+      Distance1 = DBL_MAX;
     }
    
-    if (LocMinItem < SizeJ - 1)
+    if (LocalMinItem < CurveLengthB - 1)
     {
-      NextNode = CurveT[LocMinItem + 1];
-      Dist2 = Dist2PtSeg(pt, CurNode, NextNode, IV_CURVE_NUM_COMPONENTS);
+      double *Node = CurveBT[LocalMinItem];
+      double *NextNode = CurveBT[LocalMinItem + 1];
+      Distance2 = CalculateDistanceFromPointToSegment(PointA, Node, NextNode);
     }
     else
     {
-      Dist2 = 10000;
+      Distance2 = DBL_MAX;
     }
-    res += min(Dist1, Dist2);
+    
+    double DistanceToCurve = min(Distance1, Distance2);
+    if (ResultDistance < DistanceToCurve)
+    {
+      ResultDistance = DistanceToCurve;
+    }
   }
-  res /= SizeJ;
 
-  for (i = 0; i < SizeJ; i++)
+  for (i = 0; i < CurveLengthA; i++)
   {
-    free(CurveT[i]);
-    free(PtsT[i]);
+    free(CurveAT[i]);
   }
 
-  free(CurveT);
-  free(PtsT);
-  free(v);
+  for (i = 0; i < CurveLengthB; i++)
+  {
+    free(CurveBT[i]);
+  }
 
-  return res;
+  free(CurveAT);
+  free(CurveBT);
+  return ResultDistance;
 }
 
 static double Abs(double x)
@@ -325,30 +496,33 @@ static double Abs(double x)
 }
 
 /**
- * Removes repeated data in curve
+ * This function filters out adjacent data points whose voltage and current changes
+ * fall below a 1e-6 threshold. To prevent the loss of slow, continuous trends
+ * (signal drift), each point is compared against the last officially saved
+ * unique point (index 'n'), rather than its immediate predecessor (index 'i').
  *
- * @param a curve
- * @param[in] SizeJ number of points in the curve
+ * @param[in,out] Curve - Pointer to the 2D curve matrix, where:
+ * - `a[0]` represents the array of voltages.
+ * - `a[1]` represents the array of currents.
+ * @param[in] Size - The original number of data points inside the curve.
  *
- * @return number of points in the cleaned curve
+ * @return The new length of the filtered curve (total number of unique nodes).
  */
-static uint32_t RemoveRepeatsIvc(double **a, uint32_t SizeJ)
+static uint32_t RemoveRepeatsIvc(double **Curve, uint32_t Size)
 {
   uint32_t i;
-  uint32_t n;
-  n = 0;
-  for (i = 0; i < SizeJ - 1; i++)
+  uint32_t n = 0;
+  for (i = 0; i < Size - 1; i++)
   {
-    if ((Abs(a[0][i + 1] - a[0][i]) > 1.e-6) | (Abs(a[1][i + 1] - a[1][i]) > 1.e-6))
+    if ((fabs(Curve[0][i + 1] - Curve[0][n]) > 1.e-6) || (fabs(Curve[1][i + 1] - Curve[1][n]) > 1.e-6))
     {
-      a[0][n] = a[0][i];
-      a[1][n++] = a[1][i];
+      n++;
+      Curve[0][n] = Curve[0][i + 1];
+      Curve[1][n] = Curve[1][i + 1];
     }
   }
-  a[0][n] = a[0][SizeJ - 1];
-  a[1][n++] = a[1][SizeJ - 1];
 
-  return n;
+  return n + 1;
 }
 
 /**
@@ -526,13 +700,12 @@ void SetMinVarVC(double NewMinVarV, double NewMinVarC)
   else
   {
     printf("IVCMP ERROR: Incorrect MinVarV, MinVarC setup. Got %lf, %lf. Should be > 0.\n"
-		   "CompareIVC() will not work until correct MinVar setup\n",
-		   NewMinVarV, NewMinVarC);
-	/*
-	 * Error maximization. Compare will return -1 until correct MinVar setup.
-	 */
-	MinVarV = 0;
-	MinVarC = 0;
+           "CompareIVC() will not work until correct MinVar setup\n", NewMinVarV, NewMinVarC);
+    /*
+     * Error maximization. Compare will return -1 until correct MinVar setup.
+     */
+    MinVarV = 0;
+    MinVarC = 0;
   }
 }
 
@@ -577,35 +750,63 @@ void SetMinVarVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_
  */
 void GetMinVarVC(double *NewMinVarVPtr, double *NewMinVarCPtr)
 {
-	*NewMinVarVPtr = MinVarV;
-	*NewMinVarCPtr = MinVarC;
+  *NewMinVarVPtr = MinVarV;
+  *NewMinVarCPtr = MinVarC;
 }
 
 
 /**
- * Compares two curves
- * 
- * @param[in] VoltagesA voltages of the first curve
- * @param[in] CurrentsA currents of the first curve
- * @param[in] CurveLengthA number of points in the curves
- * @param[in] VoltagesB voltages of the second curve
- * @param[in] CurrentsB currents of the second curve
- * @param[in] CurveLengthB number of points in the curves
- * 
- * @return score of difference between the curves; 1.0 for completely different curves, 0.0 for same curves
+ * This function updates the internal variables used for normalizing current-voltage
+ * characteristics (IVC). It ensures that the provided range factors are strictly positive
+ * to prevent division-by-zero errors during subsequent scaling procedures.
+ *
+ * @param[in] NewRangeV - The new scaling range factor for voltage values (must be > 0.0).
+ * @param[in] NewRangeC - The new scaling range factor for current values (must be > 0.0).
+*/
+void SetRangesVC(double NewRangeV, double NewRangeC)
+{
+  if (NewRangeV <= 0.0 || NewRangeC <= 0.0)
+  {
+    printf("IVCMP ERROR: Invalid ranges for voltages and currents. You should explicitly set them positive values.\n");
+    RangeV = 0.0;
+    RangeC = 0.0;
+    return;
+  }
+
+  RangeV = NewRangeV;
+  RangeC = NewRangeC;
+}
+
+
+/**
+ * This function evaluates the geometric difference between two synchronized IV curves of
+ * potentially different lengths. It maps the voltage and current vectors into internal 2D curve
+ * buffers, executes structural comparisons, and normalizes the final result into a standard
+ * bound score.
+ *
+ * @param[in] VoltagesA - Pointer to the array containing voltage values of the first curve (Curve A).
+ * @param[in] CurrentsA - Pointer to the array containing current values of the first curve (Curve A).
+ * @param[in] CurveLengthA - The total number of data nodes/points in Curve A.
+ * @param[in] VoltagesB - Pointer to the array containing voltage values of the second curve (Curve B).
+ * @param[in] CurrentsB - Pointer to the array containing current values of the second curve (Curve B).
+ * @param[in] CurveLengthB - The total number of data nodes/points in Curve B.
+ *
+ * @return A normalized double value indicating the degree of difference:
+ * - `0.0` if the curves are identical.
+ * - `1.0` if the curves are completely different or maximum divergence is reached.
+ * - `-1.0` if an internal memory allocation error occurs during comparison.
  */
 double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
                   double *VoltagesB, double *CurrentsB, uint32_t CurveLengthB)
 {
   uint32_t i;
   double VarV, VarC;
-  double Score;
 
   /* Check parameters */
   if (CurveLengthA <= MIN_LEN_CURVE || CurveLengthB <= MIN_LEN_CURVE)
   {
-	printf("IVCMP ERROR: The signature length is too small. There should be at least %d points.\n", MIN_LEN_CURVE);
-	return SCORE_ERROR;
+    printf("IVCMP ERROR: The signature length is too small. There should be at least %d points.\n", MIN_LEN_CURVE);
+    return SCORE_ERROR;
   }
 
   if (MinVarC <= 0 || MinVarV <= 0)
@@ -614,237 +815,131 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
      * Min variance should be at least several times larger than noise dispersion.
      * Optimal value - possible curve size.
      */
-	Score = SCORE_ERROR;
-	printf("IVCMP ERROR: Invalid normalization thresholds (MinVarVC). You should explicitly set them.\n");
-	return SCORE_ERROR;
+    printf("IVCMP ERROR: Invalid normalization thresholds (MinVarVC). You should explicitly set them.\n");
+    return SCORE_ERROR;
+  }
+
+  if (RangeC <= 0 || RangeV <= 0)
+  {
+    printf("IVCMP ERROR: Invalid voltage or current ranges. Values must be positive.\n");
+    return SCORE_ERROR;
+  }
+
+  if (!VoltagesA || !CurrentsA)
+  {
+    printf("IVCMP ERROR: Invalid voltage/current pointers provided for curve A.\n");
+    return SCORE_ERROR;
+  }
+
+  if (!VoltagesB || !CurrentsB)
+  {
+    printf("IVCMP ERROR: Invalid voltage/current pointers provided for curve B.\n");
+    return SCORE_ERROR;
   }
 
 #ifdef DEBUG_FILE_OUTPUT
-  FILE *DebugOutFile;
+  WriteVoltagesAndCurrentsToFile("input_curve_a.txt", VoltagesA, CurrentsA, CurveLengthA);
+  WriteVoltagesAndCurrentsToFile("input_curve_b.txt", VoltagesB, CurrentsB, CurveLengthB);
 #endif
 
-#ifdef DEBUG_FILE_OUTPUT
-  OPEN_FILE(DebugOutFile, "input_curve_a.txt", "w");
-  for (i = 0; i < CurveLengthA; i++)
+  double **a_ = (double**)calloc(IV_CURVE_NUM_COMPONENTS, sizeof(double*));
+  double **b_ = (double**)calloc(IV_CURVE_NUM_COMPONENTS, sizeof(double*));
+  if (a_ == NULL || b_ == NULL)
   {
-      fprintf(DebugOutFile, "%lf\t%lf\n", VoltagesA[i], CurrentsA[i]);
+    free(a_);
+    free(b_);
+    return SCORE_ERROR;
   }
-  fclose(DebugOutFile);
-
-  OPEN_FILE(DebugOutFile, "input_curve_b.txt", "w");
-  for (i = 0; i < CurveLengthB; i++)
-  {
-      fprintf(DebugOutFile, "%lf\t%lf\n", VoltagesB[i], CurrentsB[i]);
-  }
-  fclose(DebugOutFile);
-#endif
-
-  double **a_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
-  double **b_ = (double**)malloc(IV_CURVE_NUM_COMPONENTS * sizeof(double*));
 
   const uint32_t CurveLength = max(CurveLengthA, CurveLengthB);
   for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
   {
     a_[i] = (double*)malloc(CurveLength * sizeof(double));
     b_[i] = (double*)malloc(CurveLength * sizeof(double));
-  }
 
-  
-  if (!VoltagesA | !CurrentsA)
-  {
-	Score = SCORE_ERROR;
-    CleanUp(a_, b_, NULL, NULL);
-	printf("IVCMP ERROR: Invalid currents or voltages pointers given!\n");
-	return Score;
-  }
-
-  for (i = 0; i < CurveLengthA; i++)
-  {
-    a_[0][i] = VoltagesA[i];
-    a_[1][i] = CurrentsA[i];
-  }
-
-  if (VoltagesB)
-  {
-    for (i = 0; i < CurveLengthB; i++)
+    if (a_[i] == NULL || b_[i] == NULL)
     {
-      b_[0][i] = VoltagesB[i];
-      b_[1][i] = CurrentsB[i];
+      uint32_t j;
+      for (j = 0; j < IV_CURVE_NUM_COMPONENTS; j++)
+      {
+        if (a_[j]) free(a_[j]);
+        if (b_[j]) free(b_[j]);
+      }
+      free(a_);
+      free(b_);
+      return SCORE_ERROR;
     }
   }
 
-#ifdef DEBUG_FILE_OUTPUT
-  OPEN_FILE(DebugOutFile, "copied_curve_a.txt", "w");
-  for (i = 0; i < CurveLengthA; i++)
-  {
-      fprintf(DebugOutFile, "%lf\t%lf\n", a_[0][i], a_[1][i]);
-  }
-  fclose(DebugOutFile);
+  CopyCurve(VoltagesA, CurrentsA, CurveLengthA, a_);
+  CopyCurve(VoltagesB, CurrentsB, CurveLengthB, b_);
 
-  OPEN_FILE(DebugOutFile, "copied_curve_b.txt", "w");
-  for (i = 0; i < CurveLengthB; i++)
-  {
-      fprintf(DebugOutFile, "%lf\t%lf\n", b_[0][i], b_[1][i]);
-  }
-  fclose(DebugOutFile);
+#ifdef DEBUG_FILE_OUTPUT
+  WriteCurveToFile("copied_curve_a.txt", a_, CurveLengthA);
+  WriteCurveToFile("copied_curve_b.txt", b_, CurveLengthB);
 #endif
 
-  double _v = max(sqrt(Disp(a_[0], CurveLengthA)), sqrt(Disp(b_[0], CurveLengthB)));
-  double _c = max(sqrt(Disp(a_[1], CurveLengthA)), sqrt(Disp(b_[1], CurveLengthB)));
-  VarV = max(_v, MinVarV);
-  VarC = max(_c, MinVarC);
+  VarV = max(RangeV, MinVarV);
+  VarC = max(RangeC, MinVarC);
 
 #ifdef DEBUG_FILE_OUTPUT
+  FILE *DebugOutFile = NULL;
   OPEN_FILE(DebugOutFile, "variations.txt", "w");
   fprintf(DebugOutFile, "VarV = %lf\n", VarV);
   fprintf(DebugOutFile, "VarC = %lf\n", VarC);
   fclose(DebugOutFile);
 #endif
 
-  for (i = 0; i < CurveLengthA; i++)
-  { 
-    a_[0][i] = a_[0][i] / VarV;
-    a_[1][i] = a_[1][i] / VarC;
-  }
+  ScaleCurve(a_, CurveLengthA, VarV, VarC);
 
 #ifdef DEBUG_FILE_OUTPUT
-  OPEN_FILE(DebugOutFile, "scaled_a.txt", "w");
-  for (i = 0; i < CurveLengthA; i++)
+  WriteCurveToFile("scaled_a.txt", a_, CurveLengthA);
+#endif
+
+  uint32_t NewCurveLengthA = RemoveRepeatsIvc(a_, CurveLengthA);
+
+#ifdef DEBUG_FILE_OUTPUT
+  WriteCurveToFile("repeats_removed_a.txt", a_, NewCurveLengthA);
+#endif
+
+  if (NewCurveLengthA < MIN_LEN_CURVE)
   {
-      fprintf(DebugOutFile, "%lf\t%lf\n", a_[0][i], a_[1][i]);
+    printf("IVCMP ERROR: All curve A elements are identical. The algorithm is unable to match such curves.\n");
+    CleanUp(a_, b_, NULL, NULL);
+    return SCORE_ERROR;
   }
+
+  ScaleCurve(b_, CurveLengthB, VarV, VarC);
+
+#ifdef DEBUG_FILE_OUTPUT
+  WriteCurveToFile("scaled_b.txt", b_, CurveLengthB);
+#endif
+
+  uint32_t NewCurveLengthB = RemoveRepeatsIvc(b_, CurveLengthB);
+
+#ifdef DEBUG_FILE_OUTPUT
+  WriteCurveToFile("repeats_removed_b.txt", b_, NewCurveLengthB);
+#endif
+
+  if (NewCurveLengthB < MIN_LEN_CURVE)
+  {
+    printf("IVCMP ERROR: All curve B elements are identical. The algorithm is unable to match such curves.\n");
+    CleanUp(a_, b_, NULL, NULL);
+    return SCORE_ERROR;
+  }
+
+  double DistanceAB = CalculateDistanceBetweenCurves(a_, NewCurveLengthA, b_, NewCurveLengthB);
+  double DistanceBA = CalculateDistanceBetweenCurves(b_, NewCurveLengthB, a_, NewCurveLengthA);
+  double Score = max(DistanceAB, DistanceBA);
+
+#ifdef DEBUG_FILE_OUTPUT
+  OPEN_FILE(DebugOutFile, "dist_and_scores.txt", "w");
+  fprintf(DebugOutFile, "dist_a_b = %lf\n", DistanceAB);
+  fprintf(DebugOutFile, "dist_b_a = %lf\n", DistanceBA);
+  fprintf(DebugOutFile, "score = %lf\n", Score);
   fclose(DebugOutFile);
 #endif
 
-  double *InCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
-  double *OutCurve = (double *)malloc((CurveLength * IV_CURVE_NUM_COMPONENTS + 1) * sizeof(double));
-  uint32_t SizeA = RemoveRepeatsIvc(a_, CurveLengthA);
-
-#ifdef DEBUG_FILE_OUTPUT
-  OPEN_FILE(DebugOutFile, "repeats_removed_a.txt", "w");
-  for (i = 0; i < SizeA; i++)
-  {
-      fprintf(DebugOutFile, "%lf\t%lf\n", a_[0][i], a_[1][i]);
-  }
-  fclose(DebugOutFile);
-#endif
-
-  if (SizeA < MIN_LEN_CURVE)
-  {
-    Score = SCORE_ERROR;
-    printf("IVCMP ERROR:  all elements of curve identical. Algorithm doesn't match such curves!\n");
-    CleanUp(a_, b_, InCurve, OutCurve);
-    return Score;
-  }
-
-  for (i = 0; i < SizeA; i++)
-  {
-    InCurve[i * IV_CURVE_NUM_COMPONENTS + 1] = a_[0][i];
-    InCurve[i * IV_CURVE_NUM_COMPONENTS + 2] = a_[1][i];
-  }
-  for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
-  {
-    OutCurve[i] = 0.;
-  }
-
-  Bspline(SizeA, ORDER, CurveLength, InCurve, OutCurve);
-
-  for (i = 0; i < CurveLength; i++)
-  {
-    a_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
-    a_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
-  }
-
-#ifdef DEBUG_FILE_OUTPUT
-  OPEN_FILE(DebugOutFile, "splined_a.txt", "w");
-  for (i = 0; i < CurveLength; i++)
-  {
-      fprintf(DebugOutFile, "%lf\t%lf\n", a_[0][i], a_[1][i]);
-  }
-  fclose(DebugOutFile);
-#endif
-
-  if (!VoltagesB)
-  {
-    double x = Mean(a_[1], CurveLengthB);
-    Score = RescaleScore(x * x);
-  }
-  else
-  {
-    for (i = 0; i < CurveLengthB; i++)
-    {
-      b_[0][i] = b_[0][i] / VarV;
-      b_[1][i] = b_[1][i] / VarC;
-    }
-
-#ifdef DEBUG_FILE_OUTPUT
-    OPEN_FILE(DebugOutFile, "scaled_b.txt", "w");
-    for (i = 0; i < CurveLengthB; i++)
-    {
-        fprintf(DebugOutFile, "%lf\t%lf\n", b_[0][i], b_[1][i]);
-    }
-    fclose(DebugOutFile);
-#endif
-
-    uint32_t SizeB = RemoveRepeatsIvc(b_, CurveLengthB);
-
-#ifdef DEBUG_FILE_OUTPUT
-    OPEN_FILE(DebugOutFile, "repeats_removed_b.txt", "w");
-    for (i = 0; i < SizeB; i++)
-    {
-        fprintf(DebugOutFile, "%lf\t%lf\n", b_[0][i], b_[1][i]);
-    }
-    fclose(DebugOutFile);
-#endif
-
-    if (SizeB < MIN_LEN_CURVE)
-    {
-      Score = SCORE_ERROR;
-      printf("IVCMP ERROR:  all elements of curve identical. Algorithm doesn't match such curves!\n");
-      CleanUp(a_, b_, InCurve, OutCurve);
-      return Score;
-    }
-
-    for (i = 0; i < SizeB; i++)
-    {
-      InCurve[i * IV_CURVE_NUM_COMPONENTS + 1] = b_[0][i];
-      InCurve[i * IV_CURVE_NUM_COMPONENTS + 2] = b_[1][i];
-    }
-
-    for (i = 1; i <= IV_CURVE_NUM_COMPONENTS * CurveLength; i++)
-    {
-      OutCurve[i] = 0.;
-    }
-
-    Bspline(SizeB, ORDER, CurveLength, InCurve, OutCurve);
-    for (i = 0; i < CurveLength; i++)
-    {
-      b_[0][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 1];
-      b_[1][i] = OutCurve[i * IV_CURVE_NUM_COMPONENTS + 2];
-    }
-
-#ifdef DEBUG_FILE_OUTPUT
-    OPEN_FILE(DebugOutFile, "splined_b.txt", "w");
-    for (i = 0; i < CurveLength; i++)
-    {
-        fprintf(DebugOutFile, "%lf\t%lf\n", b_[0][i], b_[1][i]);
-    }
-    fclose(DebugOutFile);
-#endif
-
-    double DistAB = DistCurvePts(a_, b_, CurveLength);
-    double DistBA = DistCurvePts(b_, a_, CurveLength);
-    Score = RescaleScore((DistAB + DistBA) / 2.);
-
-#ifdef DEBUG_FILE_OUTPUT
-    OPEN_FILE(DebugOutFile, "dist_and_scores.txt", "w");
-    fprintf(DebugOutFile, "dist_a_b = %lf\n", DistAB);
-    fprintf(DebugOutFile, "dist_b_a = %lf\n", DistBA);
-    fprintf(DebugOutFile, "score = %lf\n", Score);
-    fclose(DebugOutFile);
-#endif
-  }
-  CleanUp(a_, b_, InCurve, OutCurve);
+  CleanUp(a_, b_, NULL, NULL);
   return Score;
 }
-

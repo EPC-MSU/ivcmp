@@ -16,8 +16,8 @@
 /* Storage structure IVC */
 typedef struct
 {
-  double Voltages[MAX_NUM_POINTS]; /**< Array of points of voltage in V. */
-  double Currents[MAX_NUM_POINTS]; /**< Array of points of current in mA. */
+  double Voltages[MAX_NUM_POINTS]; // Array of points of voltage in V
+  double Currents[MAX_NUM_POINTS]; // Array of points of current in mA
 } iv_curve_t;
 
 
@@ -37,35 +37,36 @@ int main(void)
   for (i = 0; i < CurveLength; i++)
   {
     /* IVC of open circuit */
-	IVCOpenCircuit.Voltages[i] = VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
-	IVCOpenCircuit.Currents[i] = 0 + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
+    IVCOpenCircuit.Voltages[i] = VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
+    IVCOpenCircuit.Currents[i] = 0 + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
 
     /* IVC of short circuit */
-	IVCShortCircuit.Voltages[i] = 0 + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
-	IVCShortCircuit.Currents[i] = CURRENT_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
+    IVCShortCircuit.Voltages[i] = 0 + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
+    IVCShortCircuit.Currents[i] = CURRENT_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
 
     /* IVC of resistor 1 */
-	IVCResistor1.Voltages[i] = 0.5 * VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
-	IVCResistor1.Currents[i] = 0.5 * CURRENT_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
+    IVCResistor1.Voltages[i] = 0.5 * VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
+    IVCResistor1.Currents[i] = 0.5 * CURRENT_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
 
     /* IVC of resistor 2 */
-	IVCResistor2.Voltages[i] = 0.47 * VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
-	IVCResistor2.Currents[i] = 0.63 * CURRENT_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
+    IVCResistor2.Voltages[i] = 0.47 * VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
+    IVCResistor2.Currents[i] = 0.63 * CURRENT_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
 
     /* IVC of capacitor */
-	IVCCapacitor.Voltages[i] = VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
-	IVCCapacitor.Currents[i] = CURRENT_AMPL * cos(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
+    IVCCapacitor.Voltages[i] = VOLTAGE_AMPL * sin(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * VOLTAGE_NOISE_AMPL;
+    IVCCapacitor.Currents[i] = CURRENT_AMPL * cos(2 * M_PI * i / CurveLength) + (double)(rand() - RAND_MAX / 2) * 2 / RAND_MAX * CURRENT_NOISE_AMPL;
 
     printf("%.2f %.2f\t%.2f %.2f\t%.2f %.2f\t%.2f %.2f\t%.2f %.2f\n",
-         (float)IVCOpenCircuit.Voltages[i],  (float)IVCOpenCircuit.Currents[i],
-         (float)IVCShortCircuit.Voltages[i], (float)IVCShortCircuit.Currents[i],
-         (float)IVCResistor1.Voltages[i],  (float)IVCResistor1.Currents[i],
-         (float)IVCResistor2.Voltages[i],  (float)IVCResistor2.Currents[i],
-         (float)IVCCapacitor.Voltages[i],  (float)IVCCapacitor.Currents[i]);
+      (float)IVCOpenCircuit.Voltages[i],  (float)IVCOpenCircuit.Currents[i],
+      (float)IVCShortCircuit.Voltages[i], (float)IVCShortCircuit.Currents[i],
+      (float)IVCResistor1.Voltages[i],  (float)IVCResistor1.Currents[i],
+      (float)IVCResistor2.Voltages[i],  (float)IVCResistor2.Currents[i],
+      (float)IVCCapacitor.Voltages[i],  (float)IVCCapacitor.Currents[i]);
   }
 
   /* Set measurement scaling threshold */
   SetMinVarVC(VOLTAGE_AMPL * 3 / 100, CURRENT_AMPL * 3 / 100);
+  SetRangesVC(VOLTAGE_AMPL, CURRENT_AMPL);
 
   printf("--- Test 1. Compare same curves.\n");
   ResultScore = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, CurveLength,
@@ -73,7 +74,7 @@ int main(void)
   printf("Got Score = %.2f, should be 0.\n", (float)ResultScore);
   if (fabs(ResultScore) > 0.1)
   {
-    printf("Test failed!!!\n");
+    printf("Test failed.\n");
     return -1;
   }
 
@@ -83,13 +84,13 @@ int main(void)
   printf("Got Score = %.2f, should be 1.\n", (float)ResultScore);
   if (fabs(ResultScore - 1) > 0.1)
   {
-    printf("Test failed!!!\n");
+    printf("Test failed.\n");
     return -1;
   }
 
   /* Set measurement scaling threshold an other way */
   SetMinVarVCFromCurves(IVCOpenCircuit.Voltages, IVCOpenCircuit.Currents, CurveLength,
-  					    IVCShortCircuit.Voltages, IVCShortCircuit.Currents, CurveLength);
+    IVCShortCircuit.Voltages, IVCShortCircuit.Currents, CurveLength);
 
   printf("--- Test 3. Compare similar curves.\n");
   ResultScore = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, CurveLength,
@@ -97,7 +98,7 @@ int main(void)
   printf("Got Score = %.2f, should be 0.18.\n", (float)ResultScore);
   if (fabs(ResultScore - 0.18) > 0.1)
   {
-    printf("Test failed!!!\n");
+    printf("Test failed.\n");
     return -1;
   }
 
@@ -107,18 +108,17 @@ int main(void)
   printf("Got Score = %.2f, should be 1.\n", (float)ResultScore);
   if (fabs(ResultScore - 1) > 0.1)
   {
-    printf("Test failed!!!\n");
+    printf("Test failed.\n");
     return -1;
   }
 
   printf("--- Test 5. Compare curves with different length.\n");
-
   iv_curve_t IVCResistor3;
   const uint32_t num_points_for_r_3 = MAX_NUM_POINTS / 2;
   for (i = 0; i < num_points_for_r_3; i++)
   {
-      IVCResistor3.Voltages[i] = 0.3 * VOLTAGE_AMPL * sin(2 * M_PI * i / num_points_for_r_3);
-      IVCResistor3.Currents[i] = 0.7 * CURRENT_AMPL * sin(2 * M_PI * i / num_points_for_r_3);
+    IVCResistor3.Voltages[i] = 0.3 * VOLTAGE_AMPL * sin(2 * M_PI * i / num_points_for_r_3);
+    IVCResistor3.Currents[i] = 0.7 * CURRENT_AMPL * sin(2 * M_PI * i / num_points_for_r_3);
   }
 
   ResultScore1 = CompareIVC(IVCResistor1.Voltages, IVCResistor1.Currents, CurveLength,
@@ -130,17 +130,16 @@ int main(void)
   printf("Score 1 = %.2f, Score 2 = %.2f (should be the same).\n", (float)ResultScore1, (float)ResultScore2);
   if (fabs(ResultScore2 - ResultScore1) > 0.1)
   {
-    printf("Test failed!!!\n");
+    printf("Test failed.\n");
     return -1;
   }
 
   if (ResultScore1 < 0)
   {
-    printf("Test failed!!!\n");
+    printf("Test failed.\n");
     return -1;
   }
 
   printf("All tests successfully passed.\n");
-
   return 0;
 }
