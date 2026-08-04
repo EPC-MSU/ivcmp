@@ -11,12 +11,15 @@
    $$
    var_x = \sqrt{\langle(x - \langle x \rangle)^2\rangle}
    $$
+
    $$
    \langle \cdot \rangle \quad \text{— усреднение}
    $$
+
    $$
    var_v = \max \{ var_{v_a}, var_{v_b} \}
    $$
+
    $$
    var_I = \max \{ var_{I_a}, var_{I_b} \}
    $$
