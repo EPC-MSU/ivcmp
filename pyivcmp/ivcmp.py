@@ -5,6 +5,12 @@ from platform import system
 import numpy as np
 
 
+VOLTAGE_AMPL = 12.
+R_CS = 475.
+CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
+MAX_NUM_POINTS = 1000
+
+
 def _fullpath_lib(name: str) -> str:
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), name)
 
@@ -50,7 +56,6 @@ def _get_dll():
 
 
 lib = _get_dll()
-MAX_NUM_POINTS = 1000
 
 
 class _IterableStructure(Structure):
@@ -245,10 +250,6 @@ def CompareIvc(first_iv_curve, second_iv_curve) -> float:
 
 
 if __name__ == "__main__":
-    VOLTAGE_AMPL = 12.
-    R_CS = 475.
-    CURRENT_AMPL = (VOLTAGE_AMPL / R_CS * 1000)
-
     iv_curve_1 = IvCurve()
     iv_curve_1.length = MAX_NUM_POINTS
     iv_curve_2 = IvCurve()
