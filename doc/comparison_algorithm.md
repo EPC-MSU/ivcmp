@@ -12,9 +12,9 @@
 
    $$\langle \cdot \rangle \quad \text{— усреднение}$$
 
-   $$var_V = \max \{ var_{V_A}, var_{V_B} \}$$
+   $$var_V = max(var_{V_A}, var_{V_B})$$
 
-   $$var_I = \max \{ var_{I_A}, var_{I_B} \}$$
+   $$var_I = max(var_{I_A}, var_{I_B})$$
 
 3. Кривые масштабируются на максимальный разброс: 
 
