@@ -39,6 +39,14 @@ static double RangeV, RangeC;
 #define OPEN_FILE(FilePtr, FileName, Mode) fopen_s(&FilePtr, FileName, Mode)
 #endif
 
+#ifdef _MSC_VER
+// Äëÿ Visual Studio (MSVC)
+#define UNUSED_FUNC
+#else
+// Äëÿ GCC / Clang (Linux)
+#define UNUSED_FUNC __attribute__((unused))
+#endif
+
 
 /* ******************************* */
 /*       Internal functions        */
@@ -95,7 +103,7 @@ static void ScaleCurve(double **Curve, uint32_t Length, double VarV, double VarC
  * @param[in] Currents Pointer to the array containing current values.
  * @param[in] Length The total number of elements to write from the arrays.
  */
-__attribute__((unused)) static void WriteVoltagesAndCurrentsToFile(const char *FileName, double *Voltages, double *Currents, uint32_t Length)
+UNUSED_FUNC static void WriteVoltagesAndCurrentsToFile(const char *FileName, double *Voltages, double *Currents, uint32_t Length)
 {
   FILE *DebugOutFile = NULL;
   uint32_t i;
@@ -128,7 +136,7 @@ __attribute__((unused)) static void WriteVoltagesAndCurrentsToFile(const char *F
  * - `Curve` holds the array of current values.
  * @param[in] Length The total number of data points to write from the curve.
  */
-__attribute__((unused)) static void WriteCurveToFile(const char *FileName, double **Curve, uint32_t Length)
+UNUSED_FUNC static void WriteCurveToFile(const char *FileName, double **Curve, uint32_t Length)
 {
   FILE *DebugOutFile = NULL;
   uint32_t i;
@@ -388,7 +396,7 @@ static double CalculateDistanceFromPointToSegment(double *Point, double *StartSe
  *
  * @return Score.
  */
-__attribute__((unused)) static double RescaleScore(double x)
+UNUSED_FUNC static double RescaleScore(double x)
 {
   return 1 - exp(-8 * x);
 }
@@ -520,7 +528,7 @@ static double CalculateDistanceBetweenCurves(double **CurveA, uint32_t CurveLeng
   return ResultDistance;
 }
 
-__attribute__((unused)) static double Abs(double x)
+UNUSED_FUNC static double Abs(double x)
 {
   return x > 0 ? x : -x;
 }
@@ -655,7 +663,7 @@ static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
  * @note t is the parameter value used in Cox-de Boor formula
  * @note x is the array containing the knot vector
  */
-__attribute__((unused)) static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p)
+UNUSED_FUNC static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p)
 {
   uint32_t i, j, Icount, Jcount;
   uint32_t i1;
