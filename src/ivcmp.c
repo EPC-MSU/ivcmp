@@ -32,7 +32,7 @@ static double MinVarV, MinVarC;
 #endif
 
 #if defined(linux)
-#define OPEN_FILE(FilePtr, FileName, Mode) file_ptr = fopen(FileName, Mode)
+#define OPEN_FILE(FilePtr, FileName, Mode) FilePtr = fopen(FileName, Mode)
 #else
 #define OPEN_FILE(FilePtr, FileName, Mode) fopen_s(&FilePtr, FileName, Mode)
 #endif
