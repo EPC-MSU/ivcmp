@@ -48,10 +48,10 @@ static double RangeV, RangeC;
  * This function packs separate synchronized 1D arrays of voltages and currents
  * into a single pre-allocated 2D destination array representing a curve.
  *
- * @param[in] Voltages - Pointer to the source array containing voltage values.
- * @param[in] Currents - Pointer to the source array containing current values.
- * @param[in] Length - The number of elements to copy from each source array.
- * @param[out] Curve - Pointer to the destination 2D array, where:
+ * @param[in] Voltages Pointer to the source array containing voltage values.
+ * @param[in] Currents Pointer to the source array containing current values.
+ * @param[in] Length The number of elements to copy from each source array.
+ * @param[out] Curve Pointer to the destination 2D array, where:
  * - `Curve[0]` stores the copied voltage array.
  * - `Curve[1]` stores the copied current array.
  */
@@ -69,12 +69,12 @@ static void CopyCurve(double *Voltages, double *Currents, uint32_t Length, doubl
  * This internal function normalizes or scales a 2D curve array in-place. It divides
  * all elements in Row 0 (Voltages) by `VarV` and all elements in Row 1 (Currents) by `VarC`.
  *
- * @param[in,out] Curve - Pointer to the 2D array representing the curve, where:
+ * @param[in,out] Curve Pointer to the 2D array representing the curve, where:
  * - `Curve[0]` points to the voltage array to be scaled.
  * - `Curve[1]` points to the current array to be scaled.
- * @param[in] Length - The number of data points inside the curve arrays.
- * @param[in] VarV - The scaling factor for voltages (must be non-zero).
- * @param[in] VarC - The scaling factor for currents (must be non-zero).
+ * @param[in] Length The number of data points inside the curve arrays.
+ * @param[in] VarV The scaling factor for voltages (must be non-zero).
+ * @param[in] VarC The scaling factor for currents (must be non-zero).
  */
 static void ScaleCurve(double **Curve, uint32_t Length, double VarV, double VarC)
 {
@@ -90,10 +90,10 @@ static void ScaleCurve(double **Curve, uint32_t Length, double VarV, double VarC
  * This internal function opens the specified file in write mode ("w") and logs
  * data in two columns: Voltages followed by Currents, separated by a tab character.
  *
- * @param[in] FileName - Path to the destination file where data will be saved.
- * @param[in] Voltages - Pointer to the array containing voltage values.
- * @param[in] Currents - Pointer to the array containing current values.
- * @param[in] Length - The total number of elements to write from the arrays.
+ * @param[in] FileName Path to the destination file where data will be saved.
+ * @param[in] Voltages Pointer to the array containing voltage values.
+ * @param[in] Currents Pointer to the array containing current values.
+ * @param[in] Length The total number of elements to write from the arrays.
  */
 static void WriteVoltagesAndCurrentsToFile(const char *FileName, double *Voltages, double *Currents, uint32_t Length)
 {
@@ -122,11 +122,11 @@ static void WriteVoltagesAndCurrentsToFile(const char *FileName, double *Voltage
  * a 2D matrix buffer and logs them into a file. Row 0 is treated as X-axis (Voltages)
  * and Row 1 is treated as Y-axis (Currents).
  *
- * @param[in] FileName - Path to the destination file where data will be saved.
- * @param[in] Curve - Pointer to the source 2D array, where:
+ * @param[in] FileName Path to the destination file where data will be saved.
+ * @param[in] Curve Pointer to the source 2D array, where:
  * - `Curve` holds the array of voltage values.
  * - `Curve` holds the array of current values.
- * @param[in] Length - The total number of data points to write from the curve.
+ * @param[in] Length The total number of data points to write from the curve.
  */
 static void WriteCurveToFile(const char *FileName, double **Curve, uint32_t Length)
 {
@@ -152,12 +152,13 @@ static void WriteCurveToFile(const char *FileName, double **Curve, uint32_t Leng
 }
 
 /**
- * Returns the difference vector of two vectors
- * 
- * @param[in] a first vector
- * @param[in] b vector to subtract
- * @param[out] v resulting vector
- * @param[in] SizeArr vector length
+ * This function performs an element-wise subtraction of vector 'b' from vector 'a'
+ * and stores the result in vector 'v'.
+ *
+ * @param[in] a Pointer to the first source vector.
+ * @param[in] b Pointer to the second source vector (subtrahend).
+ * @param[out] v Pointer to the destination vector where the result will be stored.
+ * @param[in] SizeArr Number of elements in the vectors.
  */
 static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
 {
@@ -169,12 +170,13 @@ static void SubtractVec(double *a, double *b, double *v, uint32_t SizeArr)
 }
 
 /**
- * Returns the vector mean
+ * This function sums up all elements in the provided array and divides the sum
+ * by the total number of elements.
  *
- * @param[in] mas vector
- * @param[in] SizeArr vector length
+ * @param[in] mas Pointer to the source array of double values.
+ * @param[in] SizeArr Number of elements in the array.
  *
- * @return mean of 'mas'
+ * @return The arithmetic mean of the array elements as a double.
  */
 static double Mean(double *mas, uint32_t SizeArr)
 {
@@ -188,13 +190,14 @@ static double Mean(double *mas, uint32_t SizeArr)
 }
 
 /**
- * Returns the scalar product of two vectors
+ * This function computes the sum of the products of the corresponding elements
+ * of two vectors (sum = a[0]*b[0] + a[1]*b[1] + ...).
  *
- * @param[in] a first vector
- * @param[in] b second vector
- * @param[in] SizeArr vector length
+ * @param[in] a Pointer to the first vector.
+ * @param[in] b Pointer to the second vector.
+ * @param[in] SizeArr Number of elements in the vectors.
  *
- * @return scalar product of 'a' and 'b'
+ * @return The scalar product of vector 'a' and vector 'b' as a double.
  */
 static double Dot(double *a, double *b, uint32_t SizeArr)
 {
@@ -210,37 +213,55 @@ static double Dot(double *a, double *b, uint32_t SizeArr)
 }
 
 /**
- * Returns the vector product of two vectors
+ * For 2D vectors, this computes the determinant of the 2x2 matrix formed by 'a' and 'b'
+ * (result = a[0]*b[1] - a[1]*b[0]). Geometrically, it represents the signed area
+ * of the parallelogram spanned by the vectors.
  *
- * @param[in] a first vector
- * @param[in] b second vector
- * @param[in] SizeArr vector length
+ * @param[in] a Pointer to the first 2D vector (must contain at least 2 elements).
+ * @param[in] b Pointer to the second 2D vector (must contain at least 2 elements).
  *
- * @return vector product of 'a' and 'b'
+ * @return The scalar value of the 2D cross product as a double.
  */
 static double Cross(double *a, double *b)
 {
   return a[0] * b[1] - a[1] * b[0];
 }
 
-/*
- * Clean two double matrixes and two or less dynamic massives
+/**
+ * This function frees the memory allocated for two matrices row by row using the
+ * internal global constant 'IV_CURVE_NUM_COMPONENTS'. It also safely frees 1D arrays
+ * if they are not NULL. Input pointers themselves are not modified.
  *
- * @param[in] Matrix1 first double matrix
- * @param[in] Matrix2 second double matrix
- * @param[in] Massive1 first double array
- * @param[in] Massive2 second double array
+ * @param[in,out] Matrix1 Pointer to the first 2D matrix (array of row pointers) to be freed.
+ * @param[in,out] Matrix2 Pointer to the second 2D matrix (array of row pointers) to be freed.
+ * @param[in,out] Massive1 Pointer to the first 1D dynamic array to be freed (can be NULL).
+ * @param[in,out] Massive2 Pointer to the second 1D dynamic array to be freed (can be NULL).
  */
 static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double *Massive2)
 {
   uint32_t i;
   for (i = 0; i < IV_CURVE_NUM_COMPONENTS; i++)
   {
-    free(Matrix1[i]);
-    free(Matrix2[i]);
+    if (Matrix1 != NULL && Matrix1[i] != NULL)
+    {
+      free(Matrix1[i]);
+    }
+
+    if (Matrix2 != NULL && Matrix2[i] != NULL)
+    {
+      free(Matrix2[i]);
+    }
   }
-  free(Matrix1);
-  free(Matrix2);
+  
+  if (Matrix1 != NULL)
+  {
+    free(Matrix1);
+  }
+
+  if (Matrix2 != NULL)
+  {
+    free(Matrix2);
+  }
 
   if (Massive1 != NULL)
   {
@@ -254,37 +275,45 @@ static void CleanUp(double **Matrix1, double **Matrix2, double *Massive1, double
 }
 
 /**
- * Returns the dispersion of the vector
+ * This function computes the population variance. It first finds the arithmetic
+ * mean of the array, then calculates the average of the squared deviations
+ * from that mean.
  *
- * @param[im] mas vector
- * @param[in] SizeArr vector length
+ * @param[in] mas Pointer to the source array of double values.
+ * @param[in] SizeArr Number of elements in the array.
  *
- * @return ('mas' - mean of the 'mas') ^ 2
+ * @return The variance (dispersion) of the array elements as a double.
  */
 static double Disp(double *mas, uint32_t SizeArr)
 {
-  double avg = 0;
+  double avg = 0.0;
   uint32_t i;
-  double *Disp = (double *)malloc(SizeArr * sizeof(double));
-  avg = Mean(mas, SizeArr);
 
-  for (i = 0; i < SizeArr; i++)
+  if (SizeArr == 0)
   {
-    Disp[i] = (mas[i] - avg) * (mas[i] - avg);
+    return 0.0;
   }
 
-  avg = Mean(Disp, SizeArr);
-  free(Disp);
-  return avg;
+  avg = Mean(mas, SizeArr);
+  double sum_sq_diff = 0.0;
+  for (i = 0; i < SizeArr; i++)
+  {
+    double diff = mas[i] - avg;
+    sum_sq_diff += diff * diff;
+  }
+  return sum_sq_diff / SizeArr;
 }
 
 /**
- * Returns the transposed matrix
+ * This function reflects the matrix 'm' over its main diagonal and stores
+ * the result in 'm_t'. The dimensions are flipped: 'm_t' will have 'SizeJ' rows
+ * and 'SizeI' columns.
  *
- * @param[in] m matrix
- * @param[out] m_t transposed matrix
- * @param[in] Size_I number of lines in 'm'
- * @param[in] SIze_J number of columns in 'm'
+ * @param[in] m Pointer to the original source matrix of size SizeI x SizeJ.
+ * @param[out] m_t Pointer to the destination matrix where the transposed result
+ * will be stored (allocated size must be at least SizeJ x SizeI).
+ * @param[in] SizeI Number of rows in the source matrix 'm'.
+ * @param[in] SizeJ Number of columns in the source matrix 'm'.
  */
 static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
 {
@@ -306,9 +335,9 @@ static void Transpose(double **m, double **m_t, uint32_t SizeI, uint32_t SizeJ)
  * (returning the perpendicular distance computed via the cross product).
  * All operations are optimized to utilize fixed stack arrays, eliminating dynamic memory allocations.
  *
- * @param[in] Point - Pointer to the 2D coordinate array of the target point.
- * @param[in] StartSegment - Pointer to the 2D coordinate array of the segment's starting endpoint.
- * @param[in] EndSegment - Pointer to the 2D coordinate array of the segment's terminating endpoint.
+ * @param[in] Point Pointer to the 2D coordinate array of the target point.
+ * @param[in] StartSegment Pointer to the 2D coordinate array of the segment's starting endpoint.
+ * @param[in] EndSegment Pointer to the 2D coordinate array of the segment's terminating endpoint.
  *
  * @return The minimum Euclidean geometric distance between the point and the segment.
  */
@@ -353,11 +382,11 @@ static double CalculateDistanceFromPointToSegment(double *Point, double *StartSe
 }
 
 /**
- * Updates Score value
+ * Updates score value.
  *
- * @param[in] x average sum of distances between two curves
+ * @param[in] x Average sum of distances between two curves.
  *
- * @return score 
+ * @return Score.
  */
 static double RescaleScore(double x)
 {
@@ -369,10 +398,10 @@ static double RescaleScore(double x)
 * segments defined by Curve B. It dynamically supports independent node counts for both curves.
 * The function returns the maximum value among all calculated minimum point-to-segment distances.
 *
-* @param[in] CurveA - Pointer to the first 2D curve matrix (source points).
-* @param[in] CurveLengthA - Total number of data nodes inside Curve A.
-* @param[in] CurveB - Pointer to the second 2D curve matrix (target segments).
-* @param[in] CurveLengthB - Total number of data nodes inside Curve B.
+* @param[in] CurveA Pointer to the first 2D curve matrix (source points).
+* @param[in] CurveLengthA Total number of data nodes inside Curve A.
+* @param[in] CurveB Pointer to the second 2D curve matrix (target segments).
+* @param[in] CurveLengthB Total number of data nodes inside Curve B.
 *
 * @return The maximum directed geometric distance from Curve A to Curve B, or -1.0 if memory allocation fails.
 */
@@ -502,10 +531,10 @@ static double Abs(double x)
  * (signal drift), each point is compared against the last officially saved
  * unique point (index 'n'), rather than its immediate predecessor (index 'i').
  *
- * @param[in,out] Curve - Pointer to the 2D curve matrix, where:
+ * @param[in,out] Curve Pointer to the 2D curve matrix, where:
  * - `a[0]` represents the array of voltages.
  * - `a[1]` represents the array of currents.
- * @param[in] Size - The original number of data points inside the curve.
+ * @param[in] Size The original number of data points inside the curve.
  *
  * @return The new length of the filtered curve (total number of unique nodes).
  */
@@ -686,10 +715,10 @@ static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p
 /* ******************************* */
 
 /**
- * Sets scaling threshold for voltages and currents
+ * Sets scaling threshold for voltages and currents.
  * 
- * @param NewMinVarV new voltage noise
- * @param NewMinVarC new current noise
+ * @param[in] NewMinVarV New voltage noise.
+ * @param[in] NewMinVarC New current noise.
  */
 void SetMinVarVC(double NewMinVarV, double NewMinVarC)
 {
@@ -697,17 +726,13 @@ void SetMinVarVC(double NewMinVarV, double NewMinVarC)
   {
     MinVarV = NewMinVarV;
     MinVarC = NewMinVarC;
+    return;
   }
-  else
-  {
-    printf("IVCMP ERROR: Incorrect MinVarV, MinVarC setup. Got %lf, %lf. Should be > 0.\n"
-           "CompareIVC() will not work until correct MinVar setup\n", NewMinVarV, NewMinVarC);
-    /*
-     * Error maximization. Compare will return -1 until correct MinVar setup.
-     */
-    MinVarV = 0;
-    MinVarC = 0;
-  }
+  
+  printf("IVCMP ERROR: Invalid configuration for MinVarV (%lf) and MinVarC (%lf). Both values must be greater than 0.\n"
+    "CompareIVC() execution aborted until correct MinVar setup.\n", NewMinVarV, NewMinVarC);
+  MinVarV = 0;
+  MinVarC = 0;
 }
 
 
@@ -715,12 +740,12 @@ void SetMinVarVC(double NewMinVarV, double NewMinVarC)
  * Sets scaling threshold for voltages and currents
  * by noise evaluation for short circuit and open circuit curves.
  * 
- * @param VoltagesOpenC Array of voltages for open circuit curve
- * @param CurrentsOpenC Array of currents for open circuit curve
- * @param CurveLengthOpenC Number of points in open circuit curve
- * @param VoltagesShortC Array of voltages for short circuit curve
- * @param CurrentsShortC Array of currents for short circuit curve
- * @param CurveLengthShotC Number of points in short circuit curve
+ * @param[in] VoltagesOpenC Array of voltages for open circuit curve.
+ * @param[in] CurrentsOpenC Array of currents for open circuit curve.
+ * @param[in] CurveLengthOpenC Number of points in open circuit curve.
+ * @param[in] VoltagesShortC Array of voltages for short circuit curve.
+ * @param[in] CurrentsShortC Array of currents for short circuit curve.
+ * @param[in] CurveLengthShotC Number of points in short circuit curve.
  */
 void SetMinVarVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_t CurveLengthOpenC,
                            double *VoltagesShortC, double *CurrentsShortC, uint32_t CurveLengthShotC)
@@ -744,10 +769,10 @@ void SetMinVarVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_
 
 
 /**
- * Gets active scaling threshold for voltages and currents
+ * Gets active scaling threshold for voltages and currents.
  *
- * @param NewMinVarVPtr - variable pointer to store voltage variation.
- * @param NewMinVarCPtr - variable pointer to store current variation.
+ * @param[out] NewMinVarVPtr Variable pointer to store voltage variation.
+ * @param[out] NewMinVarCPtr Variable pointer to store current variation.
  */
 void GetMinVarVC(double *NewMinVarVPtr, double *NewMinVarCPtr)
 {
@@ -761,21 +786,22 @@ void GetMinVarVC(double *NewMinVarVPtr, double *NewMinVarCPtr)
  * characteristics (IVC). It ensures that the provided range factors are strictly positive
  * to prevent division-by-zero errors during subsequent scaling procedures.
  *
- * @param[in] NewRangeV - The new scaling range factor for voltage values (must be > 0.0).
- * @param[in] NewRangeC - The new scaling range factor for current values (must be > 0.0).
+ * @param[in] NewRangeV The new scaling range factor for voltage values (must be > 0.0).
+ * @param[in] NewRangeC The new scaling range factor for current values (must be > 0.0).
 */
 void SetRangesVC(double NewRangeV, double NewRangeC)
 {
-  if (NewRangeV <= 0.0 || NewRangeC <= 0.0)
+  if (NewRangeV > 0.0 && NewRangeC > 0.0)
   {
-    printf("IVCMP ERROR: Invalid ranges for voltages and currents. You should explicitly set them positive values.\n");
-    RangeV = 0.0;
-    RangeC = 0.0;
+    RangeV = NewRangeV;
+    RangeC = NewRangeC;
     return;
   }
 
-  RangeV = NewRangeV;
-  RangeC = NewRangeC;
+  printf("IVCMP ERROR: Invalid configuration for voltage (%lf) and current (%lf) ranges. Both values must be greater than 0.\n"
+    "CompareIVC() execution aborted until correct ranges setup.\n", NewRangeV, NewRangeC);
+  RangeV = 0.0;
+  RangeC = 0.0;
 }
 
 
@@ -785,12 +811,12 @@ void SetRangesVC(double NewRangeV, double NewRangeC)
  * buffers, executes structural comparisons, and normalizes the final result into a standard
  * bound score.
  *
- * @param[in] VoltagesA - Pointer to the array containing voltage values of the first curve (Curve A).
- * @param[in] CurrentsA - Pointer to the array containing current values of the first curve (Curve A).
- * @param[in] CurveLengthA - The total number of data nodes/points in Curve A.
- * @param[in] VoltagesB - Pointer to the array containing voltage values of the second curve (Curve B).
- * @param[in] CurrentsB - Pointer to the array containing current values of the second curve (Curve B).
- * @param[in] CurveLengthB - The total number of data nodes/points in Curve B.
+ * @param[in] VoltagesA Pointer to the array containing voltage values of the first curve (Curve A).
+ * @param[in] CurrentsA Pointer to the array containing current values of the first curve (Curve A).
+ * @param[in] CurveLengthA The total number of data nodes/points in Curve A.
+ * @param[in] VoltagesB Pointer to the array containing voltage values of the second curve (Curve B).
+ * @param[in] CurrentsB Pointer to the array containing current values of the second curve (Curve B).
+ * @param[in] CurveLengthB The total number of data nodes/points in Curve B.
  *
  * @return A normalized double value indicating the degree of difference:
  * - `0.0` if the curves are identical.
@@ -816,13 +842,13 @@ double CompareIVC(double *VoltagesA, double *CurrentsA, uint32_t CurveLengthA,
      * Min variance should be at least several times larger than noise dispersion.
      * Optimal value - possible curve size.
      */
-    printf("IVCMP ERROR: Invalid normalization thresholds (MinVarVC). You should explicitly set them.\n");
+    printf("IVCMP ERROR: Invalid configuration for normalization thresholds (MinVar). All thresholds must be explicitly set to positive values.\n");
     return SCORE_ERROR;
   }
 
   if (RangeC <= 0 || RangeV <= 0)
   {
-    printf("IVCMP ERROR: Invalid voltage or current ranges. Values must be positive.\n");
+    printf("IVCMP ERROR: Invalid configuration for voltage or current ranges. All ranges must be explicitly set to positive values.\n");
     return SCORE_ERROR;
   }
 

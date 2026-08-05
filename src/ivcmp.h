@@ -45,7 +45,7 @@ extern "C"
  * При любом способе определения пороги масштабирования зависят от диапазонов измерения.
  * Поэтому значения необходимо обновлять при каждом изменении настроек измерителя.
  *
- * @param[in] NewMinVarV Характерный масштаб по напряжению. Единицы измерения: Вольты.
+ * @param[in] NewMinVarV Характерный масштаб по напряжению. Единицы измерения: В.
  * @param[in] NewMinVarC Характерный масштаб по току. Единицы измерения: мА.
  */
 EXPORT void CCONV SetMinVarVC(double NewMinVarV, double NewMinVarC);
@@ -65,11 +65,11 @@ EXPORT void CCONV SetMinVarVC(double NewMinVarV, double NewMinVarC);
  * и разрыва, используйте эту функцию. Если у Вас нет сигнатур или
  * Вы хотите произвести оценки самостоятельно, используйте функцию SetMinVarVC().
  *
- * @param[in] VoltagesOpenC Массив напряжений сигнатуры, снятой при разомкнутых щупах [Вольты]
- * @param[in] CurrentsOpenC Массив токов сигнатуры, снятой при разомкнутых щупах [мА]
+ * @param[in] VoltagesOpenC Массив напряжений сигнатуры, снятой при разомкнутых щупах [В].
+ * @param[in] CurrentsOpenC Массив токов сигнатуры, снятой при разомкнутых щупах [мА].
  * @param[in] CurveLengthOpenC Количество элементов в массивах VoltagesOpenC и CurrentsOpenC (должно быть одинаковым).
- * @param[in] VoltagesShortC Массив напряжений сигнатуры, снятой при коротко замкнутых щупах [Вольты]
- * @param[in] CurrentsShortC Массив токов сигнатуры, снятой при коротко замкнутых щупах [Вольты]
+ * @param[in] VoltagesShortC Массив напряжений сигнатуры, снятой при коротко замкнутых щупах [В].
+ * @param[in] CurrentsShortC Массив токов сигнатуры, снятой при коротко замкнутых щупах [В].
  * @param[in] CurveLengthShotC Количество элементов в массивах VoltagesShortC и CurrentsShortC (должно быть одинаковым).
  */
 EXPORT void CCONV SetMinVarVCFromCurves(double *VoltagesOpenC, double *CurrentsOpenC, uint32_t CurveLengthOpenC,
@@ -79,11 +79,17 @@ EXPORT void CCONV SetMinVarVCFromCurves(double *VoltagesOpenC, double *CurrentsO
  * Функция для получения текущих значений порогов масштабирования при нормировке токов и напряжений.
  * Подробнее о порогах см. описание функции SetMinVarVC.
  *
- * @param[out] NewMinVarVPtr - указатель, по которому будет записан характерный масштаб по напряжению. Единицы измерения: Вольты.
- * @param[out] NewMinVarCPtr - указатель, по которому будет записан характерный масштаб по напряжению. Единицы измерения: Вольты.
+ * @param[out] NewMinVarVPtr - указатель, по которому будет записан характерный масштаб по напряжению. Единицы измерения: В.
+ * @param[out] NewMinVarCPtr - указатель, по которому будет записан характерный масштаб по току. Единицы измерения: мА.
  */
 EXPORT void CCONV GetMinVarVC(double *NewMinVarVPtr, double *NewMinVarCPtr);
 
+/**
+ * Функция для установки диапазонов измерений напряжения и тока.
+ *
+ * @param[in] NewRangeV Диапазон измерений напряжения. Единицы измерения: В.
+ * @param[in] NewRangeC Диапазон измерений тока. Единицы измерения: мА.
+ */
 EXPORT void CCONV SetRangesVC(double NewRangeV, double NewRangeC);
 
 /**
@@ -99,11 +105,12 @@ EXPORT void CCONV SetRangesVC(double NewRangeV, double NewRangeC);
  * Передаваемые массивы токов и напряжений должны иметь одинаковую длину
  * и содержать по одному периоду пробного сигнала
  * (один цикл замкнутой кривой).
- * @param[in] VoltagesA Массив напряжений первой кривой для сравнения [В]
- * @param[in] CurrentsA Массив токов первой кривой для сравнения [мА]
+ *
+ * @param[in] VoltagesA Массив напряжений первой кривой для сравнения [В].
+ * @param[in] CurrentsA Массив токов первой кривой для сравнения [мА].
  * @param[in] CurveLengthA Количество элементов в массивах VoltagesA и CurrentsA (должно быть одинаковым).
- * @param[in] VoltagesB Массив напряжений второй кривой для сравнения [В]
- * @param[in] CurrentsB Массив токов второй кривой для сравнения [мА]
+ * @param[in] VoltagesB Массив напряжений второй кривой для сравнения [В].
+ * @param[in] CurrentsB Массив токов второй кривой для сравнения [мА].
  * @param[in] CurveLengthB Количество элементов в массивах VoltagesA и CurrentsA (должно быть одинаковым).
  * @return Score Степень различия (0 - кривые совпадают, 1 - кривые совсем разные).
  */
