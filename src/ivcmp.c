@@ -95,7 +95,7 @@ static void ScaleCurve(double **Curve, uint32_t Length, double VarV, double VarC
  * @param[in] Currents Pointer to the array containing current values.
  * @param[in] Length The total number of elements to write from the arrays.
  */
-static void WriteVoltagesAndCurrentsToFile(const char *FileName, double *Voltages, double *Currents, uint32_t Length)
+__attribute__((unused)) static void WriteVoltagesAndCurrentsToFile(const char *FileName, double *Voltages, double *Currents, uint32_t Length)
 {
   FILE *DebugOutFile = NULL;
   uint32_t i;
@@ -128,7 +128,7 @@ static void WriteVoltagesAndCurrentsToFile(const char *FileName, double *Voltage
  * - `Curve` holds the array of current values.
  * @param[in] Length The total number of data points to write from the curve.
  */
-static void WriteCurveToFile(const char *FileName, double **Curve, uint32_t Length)
+__attribute__((unused)) static void WriteCurveToFile(const char *FileName, double **Curve, uint32_t Length)
 {
   FILE *DebugOutFile = NULL;
   uint32_t i;
@@ -388,7 +388,7 @@ static double CalculateDistanceFromPointToSegment(double *Point, double *StartSe
  *
  * @return Score.
  */
-static double RescaleScore(double x)
+__attribute__((unused)) static double RescaleScore(double x)
 {
   return 1 - exp(-8 * x);
 }
@@ -520,7 +520,7 @@ static double CalculateDistanceBetweenCurves(double **CurveA, uint32_t CurveLeng
   return ResultDistance;
 }
 
-static double Abs(double x)
+__attribute__((unused)) static double Abs(double x)
 {
   return x > 0 ? x : -x;
 }
@@ -655,7 +655,7 @@ static void Basis(uint32_t c, double t, uint32_t Npts, double *x, double *n)
  * @note t is the parameter value used in Cox-de Boor formula
  * @note x is the array containing the knot vector
  */
-static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p)
+__attribute__((unused)) static void Bspline(uint32_t Npts, uint32_t k, uint32_t p1, double *b, double *p)
 {
   uint32_t i, j, Icount, Jcount;
   uint32_t i1;
