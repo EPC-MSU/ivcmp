@@ -6,31 +6,31 @@
 
 1. Установите CMake:
 
-```bash
-sudo apt update
-sudo apt install cmake build-essential
-```
+   ```bash
+   sudo apt update
+   sudo apt install cmake build-essential
+   ```
 
 2. Создайте отдельную папку для сборки внутри проекта и перейдите в нее:
 
-```bash
-mkdir build
-cd build
-```
+   ```bash
+   mkdir build
+   cd build
+   ```
 
 3. Сгенерируйте файлы конфигурации и соберите проект:
 
-```bash
-cmake ..
-make
-```
+   ```bash
+   cmake ..
+   make
+   ```
 
-В папке `build` появятся библиотека `libivcmp.so` и исполняемый файл `ivcmpexample` с примером.
+   В папке `build` появятся библиотека `libivcmp.so` и исполняемый файл `ivcmpexample` с примером.
 4. Чтобы запустить пример, выполните команды (находясь в папке `build`):
 
-```bash
-LD_LIBRARY_PATH=. ./ivcmpexample
-```
+   ```bash
+   LD_LIBRARY_PATH=. ./ivcmpexample
+   ```
 
 ## Инструкция для Windows
 
